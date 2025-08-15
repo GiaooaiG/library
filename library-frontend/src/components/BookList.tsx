@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { bookService } from '../services/api';
 import type { Book, PaginatedResponse, PaginationParams } from '../services/api';
+import BookDetail from './BookDetail';
 import './BookList.css';
 
 interface BookListProps {
@@ -13,6 +14,8 @@ const BookList: React.FC<BookListProps> = ({ onBookSelect, showAdminActions = fa
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginatedResponse<Book> | null>(null);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   
   // 搜索和分页状态
   const [searchInput, setSearchInput] = useState('');
@@ -72,6 +75,16 @@ const BookList: React.FC<BookListProps> = ({ onBookSelect, showAdminActions = fa
     setSearchTerm('');
     setCategoryFilter('');
     setCurrentPage(1);
+  };
+
+  const handleBookClick = (book: Book) => {
+    setSelectedBook(book);
+    setShowDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetail(false);
+    setSelectedBook(null);
   };
 
   const handlePageChange = (page: number) => {
@@ -204,7 +217,7 @@ const BookList: React.FC<BookListProps> = ({ onBookSelect, showAdminActions = fa
                 <div
                   key={book.id}
                   className="book-card"
-                  onClick={() => onBookSelect?.(book)}
+                  onClick={() => handleBookClick(book)}
                 >
                   <div className="book-header">
                     <h3 className="book-title">{book.title}</h3>
@@ -242,6 +255,14 @@ const BookList: React.FC<BookListProps> = ({ onBookSelect, showAdminActions = fa
 
           {renderPagination()}
         </>
+      )}
+
+      {showDetail && selectedBook && (
+        <BookDetail
+          book={selectedBook}
+          onClose={handleCloseDetail}
+          isAdmin={showAdminActions}
+        />
       )}
     </div>
   );
