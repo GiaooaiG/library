@@ -60,7 +60,8 @@ SERVER_PORT=8080
 #### 2.2 启动后端服务
 ```bash
 cd library-backend
-cargo run
+export LIBRARY_PATH="/opt/homebrew/lib:/opt/homebrew/Cellar/openssl@3/3.5.
+2/lib" && export DYLD_LIBRARY_PATH="/opt/homebrew/lib:/opt/homebrew/Cellar/openssl@3/3.5.2/lib" && cargo run
 ```
 
 后端服务将在 http://localhost:8080 启动
