@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { bookService, NewBook } from '../services/api';
+import { useState } from 'react';
+import { bookService } from '../services/api';
+import type { NewBook } from '../services/api';
 
 const BookAddTest: React.FC = () => {
   const [testResults, setTestResults] = useState<string[]>([]);

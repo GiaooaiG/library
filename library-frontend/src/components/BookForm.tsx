@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { bookService, NewBook } from '../services/api';
+import { bookService } from '../services/api';
+import type { NewBook } from '../services/api';
 import './BookForm.css';
 
 const bookSchema = z.object({

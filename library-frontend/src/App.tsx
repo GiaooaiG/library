@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import BookForm from './components/BookForm';
-import { bookService, Book } from './services/api';
+import { bookService } from './services/api';
+import type { Book } from './services/api';
 import './App.css';
 
 function App() {
