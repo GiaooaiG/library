@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use diesel::prelude::*;
 use validator::Validate;
-use crate::models::{NewBook, BookResponse, ApiResponse};
+use crate::models::{NewBook, BookResponse, ApiResponse, PaginationParams, PaginatedResponse};
 use crate::error::LibraryError;
 use crate::services::BookService;
 use crate::db::DbPool;
@@ -28,11 +28,16 @@ pub async fn create_book(
 
 pub async fn get_books(
     pool: web::Data<DbPool>,
+    query: web::Query<PaginationParams>,
 ) -> Result<HttpResponse, LibraryError> {
     let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
 
-    let books = web::block(move || {
-        BookService::get_all_books(&mut conn)
+    let params = query.into_inner();
+    let per_page = params.per_page.unwrap_or(20).min(100);
+    let page = params.page.unwrap_or(1).max(1);
+    
+    let (books, total) = web::block(move || {
+        BookService::get_all_books(&mut conn, &params)
     })
     .await
     .map_err(|_| LibraryError::InternalServerError)??;
@@ -42,7 +47,15 @@ pub async fn get_books(
         .map(BookResponse::from)
         .collect();
 
-    let response = ApiResponse::success(book_responses);
+    let total_pages = ((total as f64) / (per_page as f64)).ceil() as i32;
+
+    let response = ApiResponse::success(PaginatedResponse {
+        data: book_responses,
+        total,
+        page,
+        per_page,
+        total_pages,
+    });
     
     Ok(HttpResponse::Ok().json(response))
 }

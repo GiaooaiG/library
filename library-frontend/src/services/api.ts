@@ -31,6 +31,21 @@ export interface ApiResponse<T> {
   data?: T;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
+export interface PaginationParams {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  category?: string;
+}
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -45,8 +60,8 @@ export const bookService = {
     return response.data;
   },
 
-  async getBooks(): Promise<ApiResponse<Book[]>> {
-    const response = await api.get('/books');
+  async getBooks(params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<Book>>> {
+    const response = await api.get('/books', { params });
     return response.data;
   },
 
