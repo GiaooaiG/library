@@ -4,6 +4,7 @@ mod db;
 mod services;
 mod handlers;
 mod schema;
+mod middleware;
 
 use actix_web::{web, App, HttpServer};
 use db::establish_connection;
@@ -28,6 +29,11 @@ async fn main() -> std::io::Result<()> {
                             .route("", web::post().to(handlers::create_book))
                             .route("", web::get().to(handlers::get_books))
                             .route("/{id}", web::get().to(handlers::get_book))
+                    )
+                    .service(
+                        web::scope("/auth")
+                            .route("/register", web::post().to(handlers::register))
+                            .route("/login", web::post().to(handlers::login))
                     )
             )
     })

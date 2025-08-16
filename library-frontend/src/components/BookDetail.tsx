@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { bookService } from '../services/api';
 import type { Book } from '../services/api';
 import './BookDetail.css';
 

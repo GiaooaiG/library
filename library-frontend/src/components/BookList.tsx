@@ -9,7 +9,7 @@ interface BookListProps {
   showAdminActions?: boolean;
 }
 
-const BookList: React.FC<BookListProps> = ({ onBookSelect, showAdminActions = false }) => {
+const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

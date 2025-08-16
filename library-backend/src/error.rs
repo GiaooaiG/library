@@ -17,6 +17,18 @@ pub enum LibraryError {
     #[error("图书未找到")]
     BookNotFound,
     
+    #[error("用户已存在: {0}")]
+    UserAlreadyExists(String),
+    
+    #[error("用户未找到")]
+    UserNotFound,
+    
+    #[error("密码错误")]
+    InvalidPassword,
+    
+    #[error("密码哈希错误")]
+    PasswordHashError,
+    
     #[error("内部服务器错误")]
     InternalServerError,
 }
@@ -61,6 +73,30 @@ impl ResponseError for LibraryError {
                 HttpResponse::InternalServerError().json(serde_json::json!({
                     "success": false,
                     "message": "内部服务器错误"
+                }))
+            }
+            LibraryError::UserAlreadyExists(username) => {
+                HttpResponse::Conflict().json(serde_json::json!({
+                    "success": false,
+                    "message": format!("用户名 {} 已存在", username)
+                }))
+            }
+            LibraryError::UserNotFound => {
+                HttpResponse::NotFound().json(serde_json::json!({
+                    "success": false,
+                    "message": "用户未找到"
+                }))
+            }
+            LibraryError::InvalidPassword => {
+                HttpResponse::Unauthorized().json(serde_json::json!({
+                    "success": false,
+                    "message": "密码错误"
+                }))
+            }
+            LibraryError::PasswordHashError => {
+                HttpResponse::InternalServerError().json(serde_json::json!({
+                    "success": false,
+                    "message": "密码处理错误"
                 }))
             }
         }

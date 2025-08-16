@@ -29,7 +29,7 @@ const BookAddTest: React.FC = () => {
       addTestResult('测试获取图书列表...');
       const booksResponse = await bookService.getBooks();
       if (booksResponse.success) {
-        addTestResult(`✅ 获取图书列表成功，共${booksResponse.data?.length || 0}本图书`);
+        addTestResult(`✅ 获取图书列表成功，共${booksResponse.data?.data.length || 0}本图书`);
       } else {
         addTestResult('❌ 获取图书列表失败');
       }

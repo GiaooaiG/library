@@ -25,6 +25,30 @@ export interface NewBook {
   available_copies?: number;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  role?: string;
+  phone?: string;
+  created_at?: string;
+}
+
+export interface RegisterData {
+  username: string;
+  password: string;
+  phone?: string;
+}
+
+export interface LoginData {
+  username: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -54,6 +78,33 @@ const api = axios.create({
   },
 });
 
+// 请求拦截器，添加token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器，处理401错误
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const bookService = {
   async createBook(book: NewBook): Promise<ApiResponse<Book>> {
     const response = await api.post('/books', book);
@@ -69,6 +120,32 @@ export const bookService = {
     const response = await api.get(`/books/${id}`);
     return response.data;
   },
+};
+
+export const authService = {
+  async register(data: RegisterData): Promise<ApiResponse<AuthResponse>> {
+    const response = await api.post('/auth/register', data);
+    return response.data;
+  },
+
+  async login(data: LoginData): Promise<ApiResponse<AuthResponse>> {
+    const response = await api.post('/auth/login', data);
+    return response.data;
+  },
+
+  logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  },
+
+  getCurrentUser(): User | null {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  },
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
 };
 
 export default api;
