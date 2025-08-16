@@ -58,6 +58,118 @@
   color: #dc3545;
 }
 
+.record-actions {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.return-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.return-btn:hover {
+  background-color: #218838;
+}
+
+.return-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.overdue-warning {
+  color: #dc3545;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 确认对话框样式 */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.confirm-dialog {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.confirm-dialog h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.confirm-dialog p {
+  margin: 10px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.overdue-notice {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.dialog-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.cancel-btn, .confirm-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background-color: #218838;
+}
+
+.cancel-btn:disabled, .confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 600px) {
   .borrow-history {
     padding: 10px;
@@ -65,5 +177,15 @@
   
   .record-card {
     padding: 15px;
+  }
+  
+  .record-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dialog-actions {
+    flex-direction: column;
+    gap: 10px;
   }
 }

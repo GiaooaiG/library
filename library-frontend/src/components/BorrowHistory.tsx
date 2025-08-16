@@ -14,6 +14,9 @@ interface BorrowRecord {
 const BorrowHistory: React.FC = () => {
   const [records, setRecords] = useState<BorrowRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<BorrowRecord | null>(null);
+  const [returning, setReturning] = useState(false);
 
   const fetchBorrowHistory = async () => {
     try {
@@ -53,6 +56,50 @@ const BorrowHistory: React.FC = () => {
     return `status ${status}`;
   };
 
+  const handleReturnBook = (record: BorrowRecord) => {
+    setSelectedRecord(record);
+    setShowConfirmDialog(true);
+  };
+
+  const confirmReturnBook = async () => {
+    if (!selectedRecord) return;
+
+    setReturning(true);
+    try {
+      const response = await borrowService.returnBook(selectedRecord.id);
+      
+      if (response.success) {
+        // 更新本地记录
+        setRecords(records.map(record =>
+          record.id === selectedRecord.id
+            ? { ...record, status: 'returned' }
+            : record
+        ));
+        
+        // 显示成功消息
+        alert(response.message || '图书归还成功！');
+      } else {
+        alert(response.message || '归还失败，请重试');
+      }
+    } catch (error) {
+      console.error('归还图书失败:', error);
+      alert('归还失败，请稍后重试');
+    } finally {
+      setReturning(false);
+      setShowConfirmDialog(false);
+      setSelectedRecord(null);
+    }
+  };
+
+  const cancelReturnBook = () => {
+    setShowConfirmDialog(false);
+    setSelectedRecord(null);
+  };
+
+  const isOverdue = (dueDate: string) => {
+    return new Date(dueDate) < new Date();
+  };
+
   useEffect(() => {
     fetchBorrowHistory();
   }, []);
@@ -78,10 +125,54 @@ const BorrowHistory: React.FC = () => {
               <p className={getStatusClass(record.status)}>
                 状态: {getStatusText(record.status)}
               </p>
+              {record.status === 'borrowed' && (
+                <div className="record-actions">
+                  <button
+                    className="return-btn"
+                    onClick={() => handleReturnBook(record)}
+                  >
+                    归还图书
+                  </button>
+                  {isOverdue(record.due_date) && (
+                    <span className="overdue-warning">已逾期</span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
+
+      {/* 归还确认对话框 */}
+      {showConfirmDialog && (
+        <div className="confirm-dialog-overlay">
+          <div className="confirm-dialog">
+            <h3>确认归还</h3>
+            <p>确定要归还《{selectedRecord?.book_title}》吗？</p>
+            {selectedRecord && isOverdue(selectedRecord.due_date) && (
+              <p className="overdue-notice">
+                注意：该图书已逾期，请及时归还。
+              </p>
+            )}
+            <div className="dialog-actions">
+              <button
+                className="cancel-btn"
+                onClick={cancelReturnBook}
+                disabled={returning}
+              >
+                取消
+              </button>
+              <button
+                className="confirm-btn"
+                onClick={confirmReturnBook}
+                disabled={returning}
+              >
+                {returning ? '归还中...' : '确认归还'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

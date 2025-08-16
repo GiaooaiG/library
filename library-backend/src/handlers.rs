@@ -316,3 +316,53 @@ pub async fn get_borrow_history(
 
     Ok(HttpResponse::Ok().json(ApiResponse::success(records)))
 }
+
+pub async fn return_book(
+    pool: web::Data<DbPool>,
+    borrow_id: web::Path<i32>,
+    claims: crate::middleware::Claims,
+) -> Result<HttpResponse, LibraryError> {
+    let user_id = claims.sub.parse::<i32>().map_err(|_| LibraryError::InternalServerError)?;
+    let borrow_id_val = borrow_id.into_inner();
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    // 执行还书操作
+    let record = web::block(move || {
+        BorrowService::return_book(&mut conn, borrow_id_val, user_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    // 获取图书信息用于响应
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+    let book = web::block(move || {
+        BookService::get_book_by_id(&mut conn, record.book_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    // 计算是否逾期
+    let is_overdue = BorrowService::calculate_overdue(record.due_date);
+    let overdue_days = BorrowService::get_overdue_days(record.due_date);
+
+    let response = BorrowResponse {
+        id: record.id,
+        book_id: record.book_id,
+        book_title: book.title,
+        borrow_date: record.borrow_date.unwrap_or_else(|| chrono::Utc::now().naive_utc()),
+        due_date: record.due_date,
+        status: record.status.unwrap_or_else(|| "returned".to_string()),
+    };
+
+    let mut api_response = ApiResponse::success(response);
+    
+    // 如果逾期，添加提示信息
+    if is_overdue {
+        api_response.message = format!("图书已归还，逾期{}天", overdue_days);
+    } else {
+        api_response.message = "图书已成功归还".to_string();
+    }
+
+    Ok(HttpResponse::Ok().json(api_response))
+}

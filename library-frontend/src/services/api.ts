@@ -166,6 +166,11 @@ export const borrowService = {
   async getBorrowHistory(): Promise<ApiResponse<BorrowRecord[]>> {
     const response = await api.get('/borrow/history');
     return response.data;
+  },
+
+  async returnBook(borrowId: number): Promise<ApiResponse<BorrowRecord>> {
+    const response = await api.post(`/return/${borrowId}`);
+    return response.data;
   }
 };
 
