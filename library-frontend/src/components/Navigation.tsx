@@ -38,10 +38,29 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
               <Link to="/inventory-stats" className="nav-link">
                 库存统计
               </Link>
-              <Link to="/borrow-history" className="nav-link">
-                借阅历史
-              </Link>
-              <span className="nav-user">欢迎, {user.username}</span>
+              
+              {user.role === 'admin' ? (
+                <>
+                  <Link to="/admin/books/add" className="nav-link">
+                    添加图书
+                  </Link>
+                  <Link to="/admin/users" className="nav-link">
+                    用户管理
+                  </Link>
+                  <Link to="/admin/borrow-records" className="nav-link">
+                    借阅记录
+                  </Link>
+                </>
+              ) : (
+                <Link to="/borrow-history" className="nav-link">
+                  借阅历史
+                </Link>
+              )}
+              
+              <span className="nav-user">
+                欢迎, {user.username}
+                {user.role === 'admin' && <span className="role-badge">管理员</span>}
+              </span>
               <button onClick={handleLogout} className="nav-button">
                 退出登录
               </button>

@@ -5,14 +5,18 @@ use crate::services::statistics_service::{PopularBooksParams, InventoryStats};
 use crate::error::LibraryError;
 use crate::services::{BookService, UserService, BorrowService, statistics_service::StatisticsService};
 use crate::db::DbPool;
-use crate::middleware::Claims;
+use crate::middleware::{Claims, check_admin_role, check_user_ownership, get_current_user_id, is_admin};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use std::env;
 
 pub async fn create_book(
     pool: web::Data<DbPool>,
     book_data: web::Json<NewBook>,
+    claims: Claims,
 ) -> Result<HttpResponse, LibraryError> {
+    // 检查管理员权限
+    check_admin_role(&claims).map_err(|_| LibraryError::Unauthorized)?;
+    
     // 验证输入数据
     book_data.validate().map_err(LibraryError::ValidationError)?;
 
@@ -449,4 +453,101 @@ pub async fn get_inventory_stats(
     let response = ApiResponse::success(stats);
     
     Ok(HttpResponse::Ok().json(response))
+}
+
+// 管理员功能：获取所有用户的借阅记录
+pub async fn get_all_borrow_records(
+    pool: web::Data<DbPool>,
+    query: web::Query<PaginationParams>,
+    claims: Claims,
+) -> Result<HttpResponse, LibraryError> {
+    // 检查管理员权限
+    check_admin_role(&claims).map_err(|_| LibraryError::Unauthorized)?;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let params = query.into_inner();
+    let per_page = params.per_page.unwrap_or(20).min(100);
+    let page = params.page.unwrap_or(1).max(1);
+    let offset = (page - 1) * per_page;
+
+    let (records, total) = web::block(move || {
+        BorrowService::get_all_borrow_records(&mut conn, per_page as i64, offset as i64)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let total_pages = ((total as f64) / (per_page as f64)).ceil() as i32;
+
+    let response = ApiResponse::success(PaginatedResponse {
+        data: records,
+        total,
+        page,
+        per_page,
+        total_pages,
+    });
+
+    Ok(HttpResponse::Ok().json(response))
+}
+
+// 管理员功能：获取所有用户列表
+pub async fn get_all_users(
+    pool: web::Data<DbPool>,
+    query: web::Query<PaginationParams>,
+    claims: Claims,
+) -> Result<HttpResponse, LibraryError> {
+    // 检查管理员权限
+    check_admin_role(&claims).map_err(|_| LibraryError::Unauthorized)?;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let params = query.into_inner();
+    let per_page = params.per_page.unwrap_or(20).min(100);
+    let page = params.page.unwrap_or(1).max(1);
+    let offset = (page - 1) * per_page;
+
+    let (users, total) = web::block(move || {
+        UserService::get_all_users(&mut conn, per_page as i64, offset as i64)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let user_responses: Vec<UserResponse> = users
+        .into_iter()
+        .map(UserResponse::from)
+        .collect();
+
+    let total_pages = ((total as f64) / (per_page as f64)).ceil() as i32;
+
+    let response = ApiResponse::success(PaginatedResponse {
+        data: user_responses,
+        total,
+        page,
+        per_page,
+        total_pages,
+    });
+
+    Ok(HttpResponse::Ok().json(response))
+}
+
+// 管理员功能：获取特定用户的借阅记录
+pub async fn get_user_borrow_records(
+    pool: web::Data<DbPool>,
+    user_id: web::Path<i32>,
+    claims: Claims,
+) -> Result<HttpResponse, LibraryError> {
+    let target_user_id = user_id.into_inner();
+    
+    // 检查权限：管理员可以查看任何用户，普通用户只能查看自己
+    check_user_ownership(&claims, target_user_id).map_err(|_| LibraryError::Unauthorized)?;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let records = web::block(move || {
+        BorrowService::get_user_borrow_history(&mut conn, target_user_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    Ok(HttpResponse::Ok().json(ApiResponse::success(records)))
 }

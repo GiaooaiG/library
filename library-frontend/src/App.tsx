@@ -55,12 +55,23 @@ function App() {
             <Route path="/" element={
               user ? (
                 <>
-                  <section className="add-book-section">
-                    <BookForm onSuccess={handleBookAdded} />
-                  </section>
-                  <section className="books-section">
-                    <BookList key={refreshKey} />
-                  </section>
+                  {user.role === 'admin' ? (
+                    <>
+                      <section className="admin-dashboard">
+                        <h2>管理员控制台</h2>
+                        <p>欢迎使用管理员控制台，您可以管理图书、用户和借阅记录。</p>
+                      </section>
+                      <section className="books-section">
+                        <BookList key={refreshKey} />
+                      </section>
+                    </>
+                  ) : (
+                    <>
+                      <section className="books-section">
+                        <BookList key={refreshKey} />
+                      </section>
+                    </>
+                  )}
                 </>
               ) : (
                 <Navigate to="/login" replace />
@@ -83,6 +94,15 @@ function App() {
             } />
             <Route path="/inventory-stats" element={
               user ? <InventoryStats /> : <Navigate to="/login" replace />
+            } />
+            <Route path="/admin/books/add" element={
+              user?.role === 'admin' ? <BookForm onSuccess={handleBookAdded} /> : <Navigate to="/" replace />
+            } />
+            <Route path="/admin/users" element={
+              user?.role === 'admin' ? <div>用户管理页面</div> : <Navigate to="/" replace />
+            } />
+            <Route path="/admin/borrow-records" element={
+              user?.role === 'admin' ? <div>借阅记录管理页面</div> : <Navigate to="/" replace />
             } />
           </Routes>
         </main>

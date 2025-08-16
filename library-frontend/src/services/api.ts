@@ -224,4 +224,51 @@ export const statisticsService = {
   }
 };
 
+// 管理员服务
+export const adminService = {
+  async getAllUsers(params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<User>>> {
+    const response = await api.get('/admin/users', { params });
+    return response.data;
+  },
+
+  async getAllBorrowRecords(params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<BorrowRecord>>> {
+    const response = await api.get('/admin/borrow-records', { params });
+    return response.data;
+  },
+
+  async getUserBorrowRecords(userId: number): Promise<ApiResponse<BorrowRecord[]>> {
+    const response = await api.get(`/admin/users/${userId}/borrow-records`);
+    return response.data;
+  },
+
+  async createBook(book: NewBook): Promise<ApiResponse<Book>> {
+    const response = await api.post('/books', book);
+    return response.data;
+  }
+};
+
+// 权限工具
+export const authUtils = {
+  isAdmin(): boolean {
+    const user = authService.getCurrentUser();
+    return user?.role === 'admin';
+  },
+
+  isUser(): boolean {
+    const user = authService.getCurrentUser();
+    return user?.role === 'user';
+  },
+
+  canAccessUserData(targetUserId: number): boolean {
+    const user = authService.getCurrentUser();
+    if (!user) return false;
+    
+    // 管理员可以访问所有用户数据
+    if (user.role === 'admin') return true;
+    
+    // 普通用户只能访问自己的数据
+    return user.id === targetUserId;
+  }
+};
+
 export default api;

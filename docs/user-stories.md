@@ -167,22 +167,29 @@
 | 获取图书详情 | GET | /api/v1/books/:id | 所有用户 |
 | 用户注册 | POST | /api/v1/auth/register | 所有用户 |
 | 用户登录 | POST | /api/v1/auth/login | 所有用户 |
-| 借书 | POST | /api/v1/borrow | 读者 |
-| 还书 | POST | /api/v1/return | 读者 |
-| 借阅历史 | GET | /api/v1/borrow/history | 读者 |
+| 借书 | POST | /api/v1/borrow | 已登录用户 |
+| 还书 | POST | /api/v1/return | 已登录用户（本人） |
+| 借阅历史 | GET | /api/v1/borrow/history | 已登录用户（本人） |
+| 续借图书 | POST | /api/v1/renew/:id | 已登录用户（本人） |
 | 库存统计 | GET | /api/v1/statistics/inventory | 所有用户 |
 | 借阅排行榜 | GET | /api/v1/statistics/popular-books | 所有用户 |
+| 管理员-查看所有用户 | GET | /api/v1/admin/users | 管理员 |
+| 管理员-查看所有借阅记录 | GET | /api/v1/admin/borrow-records | 管理员 |
+| 管理员-查看用户借阅记录 | GET | /api/v1/admin/users/:id/borrow-records | 管理员 |
 
 ### 前端页面
-| 页面 | 路径 | 功能 |
-|---|---|---|
-| 首页 | `/` | 图书列表 |
-| 图书详情 | `/books/:id` | 查看图书 |
-| 管理员添加 | `/admin/books/add` | 添加图书 |
-| 用户登录 | `/login` | 用户认证 |
-| 个人中心 | `/profile` | 借阅历史 |
-| 库存统计 | `/inventory-stats` | 库存统计信息 |
-| 借阅排行榜 | `/popular-books` | 热门图书统计 |
+| 页面 | 路径 | 功能 | 权限 |
+|---|---|---|---|
+| 首页 | `/` | 图书列表 | 所有用户 |
+| 图书详情 | `/books/:id` | 查看图书 | 所有用户 |
+| 管理员添加图书 | `/admin/books/add` | 添加图书 | 管理员 |
+| 管理员用户管理 | `/admin/users` | 查看所有用户 | 管理员 |
+| 管理员借阅记录 | `/admin/borrow-records` | 查看所有借阅记录 | 管理员 |
+| 用户登录 | `/login` | 用户认证 | 所有用户 |
+| 用户注册 | `/register` | 用户注册 | 所有用户 |
+| 个人中心 | `/profile` | 个人借阅历史 | 已登录用户 |
+| 库存统计 | `/inventory-stats` | 库存统计信息 | 所有用户 |
+| 借阅排行榜 | `/popular-books` | 热门图书统计 | 所有用户 |
 
 ## 立即开始
 **当前任务**：故事5.2已完成，所有用户故事已实现
