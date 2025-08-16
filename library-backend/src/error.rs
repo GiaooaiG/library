@@ -31,6 +31,12 @@ pub enum LibraryError {
     
     #[error("内部服务器错误")]
     InternalServerError,
+
+    #[error("续借次数已达上限")]
+    RenewalLimitExceeded,
+
+    #[error("图书已被预约，无法续借")]
+    BookReserved,
 }
 
 impl ResponseError for LibraryError {
@@ -97,6 +103,18 @@ impl ResponseError for LibraryError {
                 HttpResponse::InternalServerError().json(serde_json::json!({
                     "success": false,
                     "message": "密码处理错误"
+                }))
+            }
+            LibraryError::RenewalLimitExceeded => {
+                HttpResponse::BadRequest().json(serde_json::json!({
+                    "success": false,
+                    "message": "续借次数已达上限"
+                }))
+            }
+            LibraryError::BookReserved => {
+                HttpResponse::BadRequest().json(serde_json::json!({
+                    "success": false,
+                    "message": "图书已被预约，无法续借"
                 }))
             }
         }

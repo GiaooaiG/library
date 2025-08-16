@@ -9,14 +9,17 @@ interface BorrowRecord {
   borrow_date: string;
   due_date: string;
   status: string;
+  renewal_count?: number;
 }
 
 const BorrowHistory: React.FC = () => {
   const [records, setRecords] = useState<BorrowRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showRenewConfirmDialog, setShowRenewConfirmDialog] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<BorrowRecord | null>(null);
   const [returning, setReturning] = useState(false);
+  const [renewing, setRenewing] = useState(false);
 
   const fetchBorrowHistory = async () => {
     try {
@@ -61,6 +64,11 @@ const BorrowHistory: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
+  const handleRenewBook = (record: BorrowRecord) => {
+    setSelectedRecord(record);
+    setShowRenewConfirmDialog(true);
+  };
+
   const confirmReturnBook = async () => {
     if (!selectedRecord) return;
 
@@ -91,8 +99,47 @@ const BorrowHistory: React.FC = () => {
     }
   };
 
+  const confirmRenewBook = async () => {
+    if (!selectedRecord) return;
+
+    setRenewing(true);
+    try {
+      const response = await borrowService.renewBook(selectedRecord.id);
+      
+      if (response.success && response.data) {
+        // 更新本地记录
+        setRecords(records.map(record =>
+          record.id === selectedRecord.id
+            ? {
+                ...record,
+                due_date: response.data!.due_date,
+                renewal_count: response.data!.renewal_count
+              }
+            : record
+        ));
+        
+        // 显示成功消息
+        alert(response.message || '图书续借成功！');
+      } else {
+        alert(response.message || '续借失败，请重试');
+      }
+    } catch (error: any) {
+      console.error('续借图书失败:', error);
+      alert(error.response?.data?.message || '续借失败，请稍后重试');
+    } finally {
+      setRenewing(false);
+      setShowRenewConfirmDialog(false);
+      setSelectedRecord(null);
+    }
+  };
+
   const cancelReturnBook = () => {
     setShowConfirmDialog(false);
+    setSelectedRecord(null);
+  };
+
+  const cancelRenewBook = () => {
+    setShowRenewConfirmDialog(false);
     setSelectedRecord(null);
   };
 
@@ -128,6 +175,13 @@ const BorrowHistory: React.FC = () => {
               {record.status === 'borrowed' && (
                 <div className="record-actions">
                   <button
+                    className="renew-btn"
+                    onClick={() => handleRenewBook(record)}
+                    disabled={(record.renewal_count || 0) >= 1}
+                  >
+                    续借图书
+                  </button>
+                  <button
                     className="return-btn"
                     onClick={() => handleReturnBook(record)}
                   >
@@ -136,6 +190,9 @@ const BorrowHistory: React.FC = () => {
                   {isOverdue(record.due_date) && (
                     <span className="overdue-warning">已逾期</span>
                   )}
+                  <div className="renewal-info">
+                    已续借: {record.renewal_count || 0}/1次
+                  </div>
                 </div>
               )}
             </div>
@@ -168,6 +225,38 @@ const BorrowHistory: React.FC = () => {
                 disabled={returning}
               >
                 {returning ? '归还中...' : '确认归还'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 续借确认对话框 */}
+      {showRenewConfirmDialog && (
+        <div className="confirm-dialog-overlay">
+          <div className="confirm-dialog">
+            <h3>确认续借</h3>
+            <p>确定要续借《{selectedRecord?.book_title}》吗？</p>
+            <p>续借后将延长7天借阅期限。</p>
+            {selectedRecord && isOverdue(selectedRecord.due_date) && (
+              <p className="overdue-notice">
+                注意：该图书已逾期，续借后请及时归还。
+              </p>
+            )}
+            <div className="dialog-actions">
+              <button
+                className="cancel-btn"
+                onClick={cancelRenewBook}
+                disabled={renewing}
+              >
+                取消
+              </button>
+              <button
+                className="confirm-btn"
+                onClick={confirmRenewBook}
+                disabled={renewing}
+              >
+                {renewing ? '续借中...' : '确认续借'}
               </button>
             </div>
           </div>

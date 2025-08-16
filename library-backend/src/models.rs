@@ -275,6 +275,7 @@ pub struct BorrowRecord {
     pub due_date: chrono::NaiveDateTime,
     pub return_date: Option<chrono::NaiveDateTime>,
     pub status: Option<String>,
+    pub renewal_count: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -298,6 +299,7 @@ pub struct BorrowResponse {
     pub borrow_date: chrono::NaiveDateTime,
     pub due_date: chrono::NaiveDateTime,
     pub status: String,
+    pub renewal_count: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

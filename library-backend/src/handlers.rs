@@ -259,7 +259,7 @@ pub async fn borrow_book(
     }
 
     // 设置7天借阅期限
-    let due_date = chrono::Utc::now()
+    let _due_date = chrono::Utc::now()
         .checked_add_signed(chrono::Duration::days(7))
         .expect("valid timestamp")
         .naive_utc();
@@ -295,6 +295,7 @@ pub async fn borrow_book(
         borrow_date: record.borrow_date.unwrap_or_else(|| chrono::Utc::now().naive_utc()),
         due_date: record.due_date,
         status: record.status.unwrap_or_else(|| "borrowed".to_string()),
+        renewal_count: record.renewal_count,
     };
 
     Ok(HttpResponse::Created().json(ApiResponse::success(response)))
@@ -353,6 +354,7 @@ pub async fn return_book(
         borrow_date: record.borrow_date.unwrap_or_else(|| chrono::Utc::now().naive_utc()),
         due_date: record.due_date,
         status: record.status.unwrap_or_else(|| "returned".to_string()),
+        renewal_count: record.renewal_count,
     };
 
     let mut api_response = ApiResponse::success(response);
@@ -362,6 +364,52 @@ pub async fn return_book(
         api_response.message = format!("图书已归还，逾期{}天", overdue_days);
     } else {
         api_response.message = "图书已成功归还".to_string();
+    }
+
+    Ok(HttpResponse::Ok().json(api_response))
+}
+
+pub async fn renew_book(
+    pool: web::Data<DbPool>,
+    borrow_id: web::Path<i32>,
+    claims: crate::middleware::Claims,
+) -> Result<HttpResponse, LibraryError> {
+    let user_id = claims.sub.parse::<i32>().map_err(|_| LibraryError::InternalServerError)?;
+    let borrow_id_val = borrow_id.into_inner();
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    // 执行续借操作
+    let record = web::block(move || {
+        BorrowService::renew_book(&mut conn, borrow_id_val, user_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    // 获取图书信息用于响应
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+    let book = web::block(move || {
+        BookService::get_book_by_id(&mut conn, record.book_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let response = BorrowResponse {
+        id: record.id,
+        book_id: record.book_id,
+        book_title: book.title,
+        borrow_date: record.borrow_date.unwrap_or_else(|| chrono::Utc::now().naive_utc()),
+        due_date: record.due_date,
+        status: record.status.unwrap_or_else(|| "borrowed".to_string()),
+        renewal_count: record.renewal_count,
+    };
+
+    let mut api_response = ApiResponse::success(response);
+    
+    // 添加续借成功提示
+    let renewal_count = record.renewal_count.unwrap_or(0);
+    if renewal_count > 0 {
+        api_response.message = format!("图书续借成功，新的到期日期为 {}", record.due_date.format("%Y-%m-%d"));
     }
 
     Ok(HttpResponse::Ok().json(api_response))

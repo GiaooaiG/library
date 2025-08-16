@@ -77,6 +77,7 @@ export interface BorrowRecord {
   borrow_date: string;
   due_date: string;
   status: string;
+  renewal_count?: number;
 }
 
 const api = axios.create({
@@ -170,6 +171,11 @@ export const borrowService = {
 
   async returnBook(borrowId: number): Promise<ApiResponse<BorrowRecord>> {
     const response = await api.post(`/return/${borrowId}`);
+    return response.data;
+  },
+
+  async renewBook(borrowId: number): Promise<ApiResponse<BorrowRecord>> {
+    const response = await api.post(`/renew/${borrowId}`);
     return response.data;
   }
 };

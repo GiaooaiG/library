@@ -1,4 +1,4 @@
-use crate::models::{Book, NewBook};
+use crate::models::{Book, NewBook, PaginationParams};
 use crate::error::LibraryError;
 use crate::schema::books;
 use diesel::prelude::*;
@@ -39,7 +39,7 @@ impl BookService {
 
     pub fn get_all_books(
         conn: &mut MysqlConnection,
-        params: &crate::models::PaginationParams,
+        params: &PaginationParams,
     ) -> Result<(Vec<Book>, i64), LibraryError> {
         use crate::schema::books::dsl::*;
         

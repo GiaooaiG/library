@@ -65,6 +65,27 @@
   gap: 10px;
 }
 
+.renew-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.renew-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.renew-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .return-btn {
   background-color: #28a745;
   color: white;
@@ -89,6 +110,12 @@
   color: #dc3545;
   font-size: 14px;
   font-weight: bold;
+}
+
+.renewal-info {
+  color: #6c757d;
+  font-size: 12px;
+  margin-top: 5px;
 }
 
 /* 确认对话框样式 */
