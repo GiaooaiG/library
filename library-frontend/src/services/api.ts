@@ -80,6 +80,23 @@ export interface BorrowRecord {
   renewal_count?: number;
 }
 
+export interface PopularBook {
+  book_id: number;
+  title: string;
+  author: string;
+  category?: string;
+  publisher?: string;
+  borrow_count: number;
+  total_copies: number;
+  available_copies: number;
+}
+
+export interface PopularBooksParams {
+  start_date?: string;
+  end_date?: string;
+  limit?: number;
+}
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -176,6 +193,13 @@ export const borrowService = {
 
   async renewBook(borrowId: number): Promise<ApiResponse<BorrowRecord>> {
     const response = await api.post(`/renew/${borrowId}`);
+    return response.data;
+  }
+};
+
+export const statisticsService = {
+  async getPopularBooks(params?: PopularBooksParams): Promise<ApiResponse<PopularBook[]>> {
+    const response = await api.get('/statistics/popular-books', { params });
     return response.data;
   }
 };

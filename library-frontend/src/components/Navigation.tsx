@@ -32,6 +32,9 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
         <div className="nav-menu">
           {user ? (
             <>
+              <Link to="/popular-books" className="nav-link">
+                借阅排行榜
+              </Link>
               <Link to="/borrow-history" className="nav-link">
                 借阅历史
               </Link>

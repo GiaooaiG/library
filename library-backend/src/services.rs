@@ -6,6 +6,7 @@
 pub mod book_service;
 pub mod user_service;
 pub mod borrow_service;
+pub mod statistics_service;
 
 // Re-export the main service structs for easier access
 pub use book_service::BookService;

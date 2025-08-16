@@ -1,8 +1,9 @@
 use actix_web::{web, HttpResponse};
 use validator::Validate;
 use crate::models::{NewBook, BookResponse, ApiResponse, PaginationParams, PaginatedResponse, NewUser, LoginUser, UserResponse, AuthResponse, RegisterUser, BorrowRequest, BorrowResponse};
+use crate::services::statistics_service::PopularBooksParams;
 use crate::error::LibraryError;
-use crate::services::{BookService, UserService, BorrowService};
+use crate::services::{BookService, UserService, BorrowService, statistics_service::StatisticsService};
 use crate::db::DbPool;
 use crate::middleware::Claims;
 use jsonwebtoken::{encode, EncodingKey, Header};
@@ -413,4 +414,23 @@ pub async fn renew_book(
     }
 
     Ok(HttpResponse::Ok().json(api_response))
+}
+
+pub async fn get_popular_books(
+    pool: web::Data<DbPool>,
+    query: web::Query<PopularBooksParams>,
+) -> Result<HttpResponse, LibraryError> {
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let params = query.into_inner();
+    
+    let popular_books = web::block(move || {
+        StatisticsService::get_popular_books(&mut conn, &params)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let response = ApiResponse::success(popular_books);
+    
+    Ok(HttpResponse::Ok().json(response))
 }

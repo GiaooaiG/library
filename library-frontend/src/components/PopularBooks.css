@@ -1,0 +1,195 @@
+.popular-books-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.popular-books-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.popular-books-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.time-filter-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.time-filter-section label {
+    font-weight: 500;
+    color: #555;
+}
+
+.time-filter-section select,
+.time-filter-section input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.time-filter-section button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.time-filter-section button:hover {
+    background-color: #2980b9;
+}
+
+.popular-books-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.popular-books-table th,
+.popular-books-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.popular-books-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.popular-books-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.rank-cell {
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+}
+
+.rank-1 { color: #f39c12; }
+.rank-2 { color: #95a5a6; }
+.rank-3 { color: #cd7f32; }
+
+.book-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.book-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.book-author {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.book-category {
+    color: #95a5a6;
+    font-size: 12px;
+}
+
+.borrow-count {
+    font-weight: bold;
+    color: #e74c3c;
+    font-size: 16px;
+    text-align: center;
+}
+
+.stock-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.total-copies {
+    color: #3498db;
+}
+
+.available-copies {
+    color: #27ae60;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #7f8c8d;
+}
+
+.error {
+    text-align: center;
+    padding: 40px;
+    color: #e74c3c;
+    font-size: 16px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+@media (max-width: 768px) {
+    .popular-books-container {
+        padding: 10px;
+    }
+    
+    .popular-books-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .popular-books-title {
+        font-size: 24px;
+    }
+    
+    .popular-books-table {
+        font-size: 14px;
+    }
+    
+    .popular-books-table th,
+    .popular-books-table td {
+        padding: 10px 8px;
+    }
+    
+    .book-title {
+        font-size: 14px;
+    }
+    
+    .book-author,
+    .book-category {
+        font-size: 12px;
+    }
+}
