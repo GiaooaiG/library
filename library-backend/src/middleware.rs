@@ -1,73 +1,41 @@
 use actix_web::{dev::Payload, FromRequest, HttpRequest, error::ErrorUnauthorized};
-use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use futures::future::{ready, Ready};
-use crate::models::Claims;
+use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
+pub use crate::models::Claims;
+use std::env;
 
-pub struct AuthenticatedUser {
-    pub id: i32,
-    pub username: String,
-    pub role: Option<String>,
-}
-
-impl FromRequest for AuthenticatedUser {
+impl FromRequest for Claims {
     type Error = actix_web::Error;
-    type Future = Ready<Result<Self, Self::Error>>;
+    type Future = Ready<Result<Claims, actix_web::Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
         let auth_header = req.headers().get("Authorization");
         
         let token = match auth_header {
-            Some(header) => {
-                let header_str = header.to_str().unwrap_or("");
+            Some(header_value) => {
+                let header_str = match header_value.to_str() {
+                    Ok(s) => s,
+                    Err(_) => return ready(Err(ErrorUnauthorized("无效的认证头"))),
+                };
+                
                 if header_str.starts_with("Bearer ") {
-                    header_str[7..].to_string()
+                    &header_str[7..]
                 } else {
-                    return ready(Err(ErrorUnauthorized("无效的认证头格式")));
+                    return ready(Err(ErrorUnauthorized("无效的认证格式")));
                 }
             }
-            None => return ready(Err(ErrorUnauthorized("未提供认证令牌"))),
+            None => return ready(Err(ErrorUnauthorized("缺少认证头"))),
         };
 
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret_key".to_string());
+        let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_key".to_string());
         
         match decode::<Claims>(
-            &token,
+            token,
             &DecodingKey::from_secret(secret.as_ref()),
             &Validation::new(Algorithm::HS256),
         ) {
-            Ok(token_data) => {
-                let claims = token_data.claims;
-                let user_id = claims.sub.parse::<i32>().unwrap_or(0);
-                
-                ready(Ok(AuthenticatedUser {
-                    id: user_id,
-                    username: claims.username,
-                    role: claims.role,
-                }))
-            }
-            Err(_) => ready(Err(ErrorUnauthorized("无效的认证令牌"))),
-        }
-    }
-}
-
-pub struct AdminUser(AuthenticatedUser);
-
-impl FromRequest for AdminUser {
-    type Error = actix_web::Error;
-    type Future = Ready<Result<Self, Self::Error>>;
-
-    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
-        let auth_future = AuthenticatedUser::from_request(req, payload);
-        
-        match auth_future.into_inner() {
-            Ok(user) => {
-                if user.role.as_deref() == Some("admin") {
-                    ready(Ok(AdminUser(user)))
-                } else {
-                    ready(Err(ErrorUnauthorized("需要管理员权限")))
-                }
-            }
-            Err(e) => ready(Err(e)),
+            Ok(token_data) => ready(Ok(token_data.claims)),
+            Err(_) => ready(Err(ErrorUnauthorized("无效的令牌"))),
         }
     }
 }

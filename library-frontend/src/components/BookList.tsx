@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { bookService } from '../services/api';
+import { bookService, authService } from '../services/api';
+import { borrowService } from '../services/api';
 import type { Book, PaginatedResponse, PaginationParams } from '../services/api';
 import BookDetail from './BookDetail';
 import './BookList.css';
@@ -89,6 +90,33 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleBorrowBook = async (bookId: number) => {
+    if (!authService.isAuthenticated()) {
+      alert('请先登录');
+      return;
+    }
+
+    try {
+      const response = await borrowService.borrowBook(bookId);
+      
+      if (response.success) {
+        alert('借阅成功！请在7天内归还');
+        // 重新获取图书列表以更新库存
+        fetchBooks({
+          page: currentPage,
+          per_page: perPage,
+          search: searchTerm || undefined,
+          category: categoryFilter || undefined,
+        });
+      } else {
+        alert(response.message || '借阅失败');
+      }
+    } catch (error) {
+      console.error('借阅失败:', error);
+      alert('借阅失败，请稍后重试');
+    }
   };
 
   const getStockStatus = (available: number, total: number) => {
@@ -242,6 +270,17 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
                     <span>可用: {book.available_copies}</span>
                   </div>
 
+                  {!showAdminActions && book.available_copies > 0 && (
+                    <button
+                      className="btn btn-small btn-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBorrowBook(book.id);
+                      }}
+                    >
+                      借阅
+                    </button>
+                  )}
                   {showAdminActions && (
                     <div className="book-actions">
                       <button className="btn btn-small">编辑</button>

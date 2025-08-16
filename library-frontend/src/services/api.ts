@@ -70,6 +70,15 @@ export interface PaginationParams {
   category?: string;
 }
 
+export interface BorrowRecord {
+  id: number;
+  book_id: number;
+  book_title: string;
+  borrow_date: string;
+  due_date: string;
+  status: string;
+}
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -145,6 +154,18 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
+  }
+};
+
+export const borrowService = {
+  async borrowBook(bookId: number): Promise<ApiResponse<BorrowRecord>> {
+    const response = await api.post('/borrow', { book_id: bookId });
+    return response.data;
+  },
+
+  async getBorrowHistory(): Promise<ApiResponse<BorrowRecord[]>> {
+    const response = await api.get('/borrow/history');
+    return response.data;
   }
 };
 

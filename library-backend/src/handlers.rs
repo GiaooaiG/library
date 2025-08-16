@@ -1,9 +1,10 @@
 use actix_web::{web, HttpResponse};
 use validator::Validate;
-use crate::models::{NewBook, BookResponse, ApiResponse, PaginationParams, PaginatedResponse, NewUser, LoginUser, UserResponse, AuthResponse, Claims, RegisterUser};
+use crate::models::{NewBook, BookResponse, ApiResponse, PaginationParams, PaginatedResponse, NewUser, LoginUser, UserResponse, AuthResponse, RegisterUser, BorrowRequest, BorrowResponse};
 use crate::error::LibraryError;
-use crate::services::{BookService, UserService};
+use crate::services::{BookService, UserService, BorrowService};
 use crate::db::DbPool;
+use crate::middleware::Claims;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use std::env;
 
@@ -218,4 +219,100 @@ pub async fn login(
     });
 
     Ok(HttpResponse::Ok().json(response))
+}
+
+pub async fn borrow_book(
+    pool: web::Data<DbPool>,
+    borrow_data: web::Json<BorrowRequest>,
+    claims: crate::middleware::Claims,
+) -> Result<HttpResponse, LibraryError> {
+    let user_id = claims.sub.parse::<i32>().map_err(|_| LibraryError::InternalServerError)?;
+    let book_id = borrow_data.book_id;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    // 检查用户是否已经借阅了这本书
+    let has_active = web::block(move || {
+        BorrowService::has_active_borrow(&mut conn, user_id, book_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    if has_active {
+        return Ok(HttpResponse::BadRequest().json(ApiResponse::<()>::error(
+            "您已经借阅了这本书".to_string(),
+        )));
+    }
+
+    // 检查库存
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+    let available_copies = web::block(move || {
+        BorrowService::get_book_available_copies(&mut conn, book_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    if available_copies <= 0 {
+        return Ok(HttpResponse::BadRequest().json(ApiResponse::<()>::error(
+            "图书库存不足".to_string(),
+        )));
+    }
+
+    // 设置7天借阅期限
+    let due_date = chrono::Utc::now()
+        .checked_add_signed(chrono::Duration::days(7))
+        .expect("valid timestamp")
+        .naive_utc();
+
+    // 创建借阅记录
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+    let record = web::block(move || {
+        BorrowService::create_borrow_record(&mut conn, user_id, book_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    // 更新库存
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+    web::block(move || {
+        BorrowService::update_book_stock(&mut conn, book_id, true)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    // 获取图书信息用于响应
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+    let book = web::block(move || {
+        BookService::get_book_by_id(&mut conn, book_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let response = BorrowResponse {
+        id: record.id,
+        book_id,
+        book_title: book.title,
+        borrow_date: record.borrow_date.unwrap_or_else(|| chrono::Utc::now().naive_utc()),
+        due_date: record.due_date,
+        status: record.status.unwrap_or_else(|| "borrowed".to_string()),
+    };
+
+    Ok(HttpResponse::Created().json(ApiResponse::success(response)))
+}
+
+pub async fn get_borrow_history(
+    pool: web::Data<DbPool>,
+    claims: crate::middleware::Claims,
+) -> Result<HttpResponse, LibraryError> {
+    let user_id = claims.sub.parse::<i32>().map_err(|_| LibraryError::InternalServerError)?;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let records = web::block(move || {
+        BorrowService::get_user_borrow_history(&mut conn, user_id)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    Ok(HttpResponse::Ok().json(ApiResponse::success(records)))
 }

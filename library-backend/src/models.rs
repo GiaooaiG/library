@@ -13,6 +13,31 @@ pub enum UsersRole {
     User,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum BorrowStatus {
+    Borrowed,
+    Returned,
+    Overdue,
+}
+
+impl BorrowStatus {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            BorrowStatus::Borrowed => "borrowed",
+            BorrowStatus::Returned => "returned",
+            BorrowStatus::Overdue => "overdue",
+        }
+    }
+    
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "returned" => BorrowStatus::Returned,
+            "overdue" => BorrowStatus::Overdue,
+            _ => BorrowStatus::Borrowed,
+        }
+    }
+}
+
 impl<DB> diesel::deserialize::FromSql<UsersRoleEnum, DB> for UsersRole
 where
     DB: diesel::backend::Backend,
@@ -239,4 +264,44 @@ pub struct Claims {
     pub username: String,
     pub role: Option<String>,
     pub exp: usize,
+}
+
+#[derive(Queryable, Serialize, Deserialize, Debug, Clone)]
+pub struct BorrowRecord {
+    pub id: i32,
+    pub user_id: i32,
+    pub book_id: i32,
+    pub borrow_date: Option<chrono::NaiveDateTime>,
+    pub due_date: chrono::NaiveDateTime,
+    pub return_date: Option<chrono::NaiveDateTime>,
+    pub status: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NewBorrowRecord {
+    pub user_id: i32,
+    pub book_id: i32,
+    pub due_date: chrono::NaiveDateTime,
+    pub status: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BorrowRequest {
+    pub book_id: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BorrowResponse {
+    pub id: i32,
+    pub book_id: i32,
+    pub book_title: String,
+    pub borrow_date: chrono::NaiveDateTime,
+    pub due_date: chrono::NaiveDateTime,
+    pub status: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BorrowHistoryResponse {
+    pub records: Vec<BorrowResponse>,
+    pub total: i64,
 }

@@ -5,6 +5,7 @@ import BookList from './components/BookList';
 import Login from './components/Login';
 import Register from './components/Register';
 import Navigation from './components/Navigation';
+import BorrowHistory from './components/BorrowHistory';
 import './App.css';
 
 interface User {
@@ -71,6 +72,9 @@ function App() {
             } />
             <Route path="/register" element={
               user ? <Navigate to="/" replace /> : <Register />
+            } />
+            <Route path="/borrow-history" element={
+              user ? <BorrowHistory /> : <Navigate to="/login" replace />
             } />
           </Routes>
         </main>

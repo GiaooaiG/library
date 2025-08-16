@@ -1,0 +1,69 @@
+.borrow-history {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.borrow-history h2 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading, .empty {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+  font-size: 16px;
+}
+
+.records {
+  display: grid;
+  gap: 15px;
+}
+
+.record-card {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.record-info h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.record-info p {
+  margin: 6px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.status {
+  font-weight: bold;
+}
+
+.status.borrowed {
+  color: #007bff;
+}
+
+.status.returned {
+  color: #28a745;
+}
+
+.status.overdue {
+  color: #dc3545;
+}
+
+@media (max-width: 600px) {
+  .borrow-history {
+    padding: 10px;
+  }
+  
+  .record-card {
+    padding: 15px;
+  }
+}
