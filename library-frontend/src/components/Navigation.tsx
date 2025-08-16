@@ -35,6 +35,9 @@ const Navigation: React.FC<NavigationProps> = ({ user, onLogout }) => {
               <Link to="/popular-books" className="nav-link">
                 借阅排行榜
               </Link>
+              <Link to="/inventory-stats" className="nav-link">
+                库存统计
+              </Link>
               <Link to="/borrow-history" className="nav-link">
                 借阅历史
               </Link>

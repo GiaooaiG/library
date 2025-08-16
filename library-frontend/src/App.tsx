@@ -7,6 +7,7 @@ import Register from './components/Register';
 import Navigation from './components/Navigation';
 import BorrowHistory from './components/BorrowHistory';
 import PopularBooks from './components/PopularBooks';
+import InventoryStats from './components/InventoryStats';
 import './App.css';
 
 interface User {
@@ -79,6 +80,9 @@ function App() {
             } />
             <Route path="/popular-books" element={
               user ? <PopularBooks /> : <Navigate to="/login" replace />
+            } />
+            <Route path="/inventory-stats" element={
+              user ? <InventoryStats /> : <Navigate to="/login" replace />
             } />
           </Routes>
         </main>

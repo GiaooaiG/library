@@ -22,6 +22,23 @@ pub struct PopularBooksParams {
     pub limit: Option<i32>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InventoryStats {
+    pub total_books: i64,
+    pub total_copies: i64,
+    pub available_copies: i64,
+    pub borrowed_copies: i64,
+    pub category_stats: Vec<CategoryStats>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CategoryStats {
+    pub category: Option<String>,
+    pub book_count: i64,
+    pub total_copies: i64,
+    pub available_copies: i64,
+}
+
 pub struct StatisticsService;
 
 impl StatisticsService {
@@ -95,6 +112,70 @@ impl StatisticsService {
 
         Ok(popular_books)
     }
+
+    /// 获取库存统计信息
+    pub fn get_inventory_stats(conn: &mut MysqlConnection) -> Result<InventoryStats, LibraryError> {
+        // 获取总体统计
+        let total_query = r#"
+            SELECT
+                COUNT(*) as total_books,
+                COALESCE(SUM(total_copies), 0) as total_copies,
+                COALESCE(SUM(available_copies), 0) as available_copies
+            FROM books
+        "#;
+        
+        let total_result = diesel::sql_query(total_query)
+            .load::<TotalStatsRow>(conn)
+            .map_err(|e| {
+                eprintln!("获取总体库存统计失败: {:?}", e);
+                LibraryError::DatabaseError(e)
+            })?;
+        
+        let total_stats = total_result.into_iter().next().unwrap_or(TotalStatsRow {
+            total_books: 0,
+            total_copies: 0,
+            available_copies: 0,
+        });
+        
+        // 获取按分类统计
+        let category_query = r#"
+            SELECT
+                category,
+                COUNT(*) as book_count,
+                COALESCE(SUM(total_copies), 0) as total_copies,
+                COALESCE(SUM(available_copies), 0) as available_copies
+            FROM books
+            GROUP BY category
+            ORDER BY book_count DESC
+        "#;
+        
+        let category_results = diesel::sql_query(category_query)
+            .load::<CategoryStatsRow>(conn)
+            .map_err(|e| {
+                eprintln!("获取分类库存统计失败: {:?}", e);
+                LibraryError::DatabaseError(e)
+            })?;
+        
+        let category_stats = category_results
+            .into_iter()
+            .map(|row| CategoryStats {
+                category: row.category,
+                book_count: row.book_count,
+                total_copies: row.total_copies,
+                available_copies: row.available_copies,
+            })
+            .collect();
+        
+        let borrowed_copies = total_stats.total_copies - total_stats.available_copies;
+        
+        Ok(InventoryStats {
+            total_books: total_stats.total_books,
+            total_copies: total_stats.total_copies,
+            available_copies: total_stats.available_copies,
+            borrowed_copies,
+            category_stats,
+        })
+    }
 }
 
 #[derive(QueryableByName)]
@@ -115,4 +196,26 @@ struct PopularBookRow {
     total_copies: Option<i32>,
     #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
     available_copies: Option<i32>,
+}
+
+#[derive(QueryableByName)]
+struct TotalStatsRow {
+    #[sql_type = "diesel::sql_types::BigInt"]
+    total_books: i64,
+    #[sql_type = "diesel::sql_types::BigInt"]
+    total_copies: i64,
+    #[sql_type = "diesel::sql_types::BigInt"]
+    available_copies: i64,
+}
+
+#[derive(QueryableByName)]
+struct CategoryStatsRow {
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    category: Option<String>,
+    #[sql_type = "diesel::sql_types::BigInt"]
+    book_count: i64,
+    #[sql_type = "diesel::sql_types::BigInt"]
+    total_copies: i64,
+    #[sql_type = "diesel::sql_types::BigInt"]
+    available_copies: i64,
 }

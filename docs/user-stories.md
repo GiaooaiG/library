@@ -170,6 +170,7 @@
 | 借书 | POST | /api/v1/borrow | 读者 |
 | 还书 | POST | /api/v1/return | 读者 |
 | 借阅历史 | GET | /api/v1/borrow/history | 读者 |
+| 库存统计 | GET | /api/v1/statistics/inventory | 所有用户 |
 | 借阅排行榜 | GET | /api/v1/statistics/popular-books | 所有用户 |
 
 ### 前端页面
@@ -180,6 +181,7 @@
 | 管理员添加 | `/admin/books/add` | 添加图书 |
 | 用户登录 | `/login` | 用户认证 |
 | 个人中心 | `/profile` | 借阅历史 |
+| 库存统计 | `/inventory-stats` | 库存统计信息 |
 | 借阅排行榜 | `/popular-books` | 热门图书统计 |
 
 ## 立即开始

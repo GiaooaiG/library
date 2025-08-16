@@ -51,6 +51,7 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("/statistics")
                             .route("/popular-books", web::get().to(handlers::get_popular_books))
+                            .route("/inventory", web::get().to(handlers::get_inventory_stats))
                     )
             )
     })

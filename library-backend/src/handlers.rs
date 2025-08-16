@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use validator::Validate;
 use crate::models::{NewBook, BookResponse, ApiResponse, PaginationParams, PaginatedResponse, NewUser, LoginUser, UserResponse, AuthResponse, RegisterUser, BorrowRequest, BorrowResponse};
-use crate::services::statistics_service::PopularBooksParams;
+use crate::services::statistics_service::{PopularBooksParams, InventoryStats};
 use crate::error::LibraryError;
 use crate::services::{BookService, UserService, BorrowService, statistics_service::StatisticsService};
 use crate::db::DbPool;
@@ -431,6 +431,22 @@ pub async fn get_popular_books(
     .map_err(|_| LibraryError::InternalServerError)??;
 
     let response = ApiResponse::success(popular_books);
+    
+    Ok(HttpResponse::Ok().json(response))
+}
+
+pub async fn get_inventory_stats(
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse, LibraryError> {
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let stats = web::block(move || {
+        StatisticsService::get_inventory_stats(&mut conn)
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let response = ApiResponse::success(stats);
     
     Ok(HttpResponse::Ok().json(response))
 }

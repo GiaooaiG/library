@@ -97,6 +97,21 @@ export interface PopularBooksParams {
   limit?: number;
 }
 
+export interface InventoryStats {
+  total_books: number;
+  total_copies: number;
+  available_copies: number;
+  borrowed_copies: number;
+  category_stats: CategoryStats[];
+}
+
+export interface CategoryStats {
+  category?: string;
+  book_count: number;
+  total_copies: number;
+  available_copies: number;
+}
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -200,6 +215,11 @@ export const borrowService = {
 export const statisticsService = {
   async getPopularBooks(params?: PopularBooksParams): Promise<ApiResponse<PopularBook[]>> {
     const response = await api.get('/statistics/popular-books', { params });
+    return response.data;
+  },
+
+  async getInventoryStats(): Promise<ApiResponse<InventoryStats>> {
+    const response = await api.get('/statistics/inventory');
     return response.data;
   }
 };
