@@ -1,14 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { Book } from '../services/api';
+import { borrowService, authService } from '../services/api';
 import './BookDetail.css';
 
 interface BookDetailProps {
   book: Book;
   onClose: () => void;
   isAdmin?: boolean;
+  onBorrowSuccess?: (book: Book) => void;
 }
 
-const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false }) => {
+const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false, onBorrowSuccess }) => {
+  const [isBorrowing, setIsBorrowing] = useState(false);
+  
   const getStockStatus = (available: number, total: number) => {
     if (available === 0) {
       return { text: '已借完', className: 'status-out-of-stock' };
@@ -38,6 +42,43 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false 
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [onClose]);
+
+  // 处理借阅图书
+  const handleBorrowBook = async () => {
+    if (!authService.isAuthenticated()) {
+      alert('请先登录');
+      return;
+    }
+
+    setIsBorrowing(true);
+    try {
+      const response = await borrowService.borrowBook(book.id);
+      
+      if (response.success) {
+        alert('借阅成功！请在7天内归还');
+        // 更新图书信息
+        const updatedBook = {
+          ...book,
+          available_copies: book.available_copies - 1
+        };
+        
+        // 调用成功回调
+        if (onBorrowSuccess) {
+          onBorrowSuccess(updatedBook);
+        }
+        
+        // 关闭详情弹窗
+        onClose();
+      } else {
+        alert(response.message || '借阅失败');
+      }
+    } catch (error) {
+      console.error('借阅失败:', error);
+      alert('借阅失败，请稍后重试');
+    } finally {
+      setIsBorrowing(false);
+    }
+  };
 
   return (
     <div className="book-detail-modal" onClick={handleBackdropClick}>
@@ -104,8 +145,12 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false 
 
             <div className="book-actions">
               {book.available_copies > 0 ? (
-                <button className="btn btn-primary">
-                  借阅图书
+                <button
+                  className="btn btn-primary"
+                  onClick={handleBorrowBook}
+                  disabled={isBorrowing}
+                >
+                  {isBorrowing ? '借阅中...' : '借阅图书'}
                 </button>
               ) : (
                 <button className="btn btn-secondary" disabled>

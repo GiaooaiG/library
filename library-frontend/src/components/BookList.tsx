@@ -88,6 +88,25 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
     setSelectedBook(null);
   };
 
+  const handleBorrowSuccess = (updatedBook: Book) => {
+    // 更新图书列表中的对应图书信息
+    setBooks(prevBooks =>
+      prevBooks.map(book =>
+        book.id === updatedBook.id ? updatedBook : book
+      )
+    );
+    
+    // 如果分页数据也需要更新
+    if (pagination) {
+      setPagination(prev => prev ? {
+        ...prev,
+        data: prev.data.map(book =>
+          book.id === updatedBook.id ? updatedBook : book
+        )
+      } : null);
+    }
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -103,13 +122,26 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
       
       if (response.success) {
         alert('借阅成功！请在7天内归还');
-        // 重新获取图书列表以更新库存
-        fetchBooks({
-          page: currentPage,
-          per_page: perPage,
-          search: searchTerm || undefined,
-          category: categoryFilter || undefined,
-        });
+        // 更新本地图书数据，避免重新获取整个列表
+        setBooks(prevBooks =>
+          prevBooks.map(book =>
+            book.id === bookId
+              ? { ...book, available_copies: book.available_copies - 1 }
+              : book
+          )
+        );
+        
+        // 更新分页数据
+        if (pagination) {
+          setPagination(prev => prev ? {
+            ...prev,
+            data: prev.data.map(book =>
+              book.id === bookId
+                ? { ...book, available_copies: book.available_copies - 1 }
+                : book
+            )
+          } : null);
+        }
       } else {
         alert(response.message || '借阅失败');
       }
@@ -272,8 +304,10 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
 
                   {!showAdminActions && book.available_copies > 0 && (
                     <button
+                      type="button"
                       className="btn btn-small btn-primary"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         handleBorrowBook(book.id);
                       }}
@@ -301,6 +335,7 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
           book={selectedBook}
           onClose={handleCloseDetail}
           isAdmin={showAdminActions}
+          onBorrowSuccess={handleBorrowSuccess}
         />
       )}
     </div>
