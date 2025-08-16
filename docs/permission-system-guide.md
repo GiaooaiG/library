@@ -14,6 +14,22 @@
 2. **API权限检查**: 每个敏感操作都进行权限验证
 3. **前端权限控制**: 根据角色显示不同界面
 
+## 预设管理员账号
+
+系统已预设管理员账号，可直接使用：
+
+- **用户名**: `admin`
+- **密码**: `password123`
+- **角色**: 管理员
+
+### 管理员登录
+```bash
+# 获取管理员token
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password123"}'
+```
+
 ## 后端权限中间件
 
 ### 权限检查函数
@@ -112,40 +128,42 @@ chmod +x test_permission_system.sh
 ./test_permission_system.sh
 ```
 
-### 手动测试步骤
-1. **启动后端服务**:
+### 快速测试步骤
+1. **启动系统**:
    ```bash
-   cd library-backend
-   cargo run
+   # 启动后端
+   cd library-backend && cargo run
+   
+   # 启动前端（新终端）
+   cd library-frontend && npm run dev
    ```
 
-2. **注册管理员用户**:
-   ```bash
-   curl -X POST http://localhost:8080/api/v1/auth/register \
-     -H "Content-Type: application/json" \
-     -d '{"username": "admin", "password": "admin123", "phone": "12345678901"}'
-   ```
+2. **管理员登录**:
+   - 访问 `http://localhost:5173/login`
+   - 用户名: `admin`
+   - 密码: `password123`
 
-3. **注册普通用户**:
-   ```bash
-   curl -X POST http://localhost:8080/api/v1/auth/register \
-     -H "Content-Type: application/json" \
-     -d '{"username": "user", "password": "user123", "phone": "12345678901"}'
-   ```
-
-4. **测试权限**:
-   - 管理员登录后尝试添加图书
-   - 普通用户登录后尝试添加图书（应失败）
-   - 普通用户查看自己的借阅历史
-   - 管理员查看所有用户的借阅记录
+3. **权限验证**:
+   - 管理员可访问所有功能
+   - 创建普通用户测试权限限制
+   - 验证普通用户无法访问管理员功能
 
 ## 数据库权限设置
 
-### 创建管理员用户
+### 管理员账号信息
+系统通过数据库迁移自动创建管理员账号：
+
 ```sql
--- 手动创建管理员用户（需要直接在数据库中设置role为'admin'）
+-- 管理员账号已自动创建
+SELECT username, role FROM users WHERE username = 'admin';
+-- 结果: username='admin', role='admin'
+```
+
+### 手动创建管理员（如需）
+```sql
+-- 如需手动创建管理员用户
 INSERT INTO users (username, password_hash, role, phone) 
-VALUES ('admin', '$argon2id$v=19$m=19456,t=2,p=1$...', 'admin', '12345678901');
+VALUES ('newadmin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/J9eHCOOLa', 'admin', '12345678901');
 ```
 
 ## 常见问题解决
@@ -163,33 +181,6 @@ VALUES ('admin', '$argon2id$v=19$m=19456,t=2,p=1$...', 'admin', '12345678901');
 ### 3. 跨域问题
 - 确保前端和后端配置正确的CORS设置
 - 检查API_URL环境变量
-
-## 安全最佳实践
-
-1. **令牌管理**: JWT令牌应设置合理的过期时间
-2. **密码安全**: 使用强密码策略
-3. **权限最小化**: 只授予必要的权限
-4. **审计日志**: 记录重要操作
-5. **输入验证**: 所有输入都应进行验证
-
-## API响应示例
-
-### 成功响应
-```json
-{
-  "success": true,
-  "message": "操作成功",
-  "data": {...}
-}
-```
-
-### 权限错误响应
-```json
-{
-  "success": false,
-  "message": "未授权访问"
-}
-```
 
 ## 环境变量配置
 
@@ -210,3 +201,4 @@ VITE_API_URL=http://localhost:8080/api/v1
 - 普通用户只能访问自己的数据
 - 系统具有良好的安全性和可扩展性
 - 前后端权限控制保持一致
+- 预设管理员账号可直接使用

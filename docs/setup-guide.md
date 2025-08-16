@@ -29,77 +29,15 @@ FLUSH PRIVILEGES;
 DATABASE_URL=mysql://library_user:123456@localhost/library_db
 SERVER_HOST=127.0.0.1
 SERVER_PORT=8080
+JWT_SECRET=your-secret-key-here
 
 # 前端配置
 VITE_API_URL=http://localhost:8080/api/v1
 ```
 
-## 2. 后端环境配置
+## 2. 快速启动
 
-### 2.1 安装Rust工具链
-```bash
-# 安装Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# 安装Diesel CLI
-cargo install diesel_cli --no-default-features --features mysql
-```
-
-### 2.2 项目初始化
-```bash
-cd library-backend
-
-# 初始化Diesel
-diesel setup
-diesel migration generate create_tables
-
-# 创建迁移文件
-# 编辑 migrations/2025-08-15-000000_create_tables/up.sql
-# 编辑 migrations/2025-08-15-000000_create_tables/down.sql
-```
-
-### 2.3 依赖安装
-编辑 `Cargo.toml`：
-```toml
-[dependencies]
-actix-web = "4.0"
-diesel = { version = "2.0", features = ["mysql", "chrono"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
-dotenv = "0.15"
-```
-
-## 3. 前端环境配置
-
-### 3.1 安装依赖
-```bash
-cd library-frontend
-npm install
-```
-
-### 3.2 安装额外依赖
-```bash
-npm install axios react-router-dom @types/react-router-dom
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
-
-### 3.3 配置Tailwind
-编辑 `tailwind.config.js`：
-```javascript
-module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-```
-
-## 4. 一键启动脚本
-
-### 4.1 创建启动脚本
+### 2.1 一键启动脚本
 创建 `start-dev.sh` (Linux/Mac) 或 `start-dev.bat` (Windows):
 
 ```bash
@@ -126,7 +64,7 @@ echo "📱 前端: http://localhost:5173"
 echo "🔧 后端: http://localhost:8080"
 ```
 
-### 4.2 Windows批处理
+### 2.2 Windows批处理
 ```batch
 @echo off
 echo 🚀 启动图书馆管理系统...
@@ -139,53 +77,86 @@ echo ✅ 系统已启动！
 pause
 ```
 
-## 5. 验证步骤
+## 3. 管理员账号
 
-### 5.1 数据库连接测试
+系统已预设管理员账号，可直接使用：
+
+- **用户名**: `admin`
+- **密码**: `password123`
+- **角色**: 管理员（拥有所有权限）
+
+### 3.1 登录方式
+1. **前端登录**: 访问 `http://localhost:5173/login`
+2. **API登录**: 
+   ```bash
+   curl -X POST http://localhost:8080/api/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"admin","password":"password123"}'
+   ```
+
+### 3.2 管理员权限
+- ✅ 添加/编辑/删除图书
+- ✅ 查看所有用户
+- ✅ 查看所有借阅记录
+- ✅ 管理系统设置
+
+## 4. 验证步骤
+
+### 4.1 数据库验证
 ```bash
 # 测试数据库连接
-mysql -u root -p -e "USE library_db; SHOW TABLES;"
+mysql -u library_user -p123456 -e "USE library_db; SHOW TABLES;"
 ```
 
-### 5.2 后端启动测试
+### 4.2 后端验证
 ```bash
 cd library-backend
 cargo check
 cargo run
-# 访问: http://localhost:8080/health
+# 访问: http://localhost:8080/api/v1/books
 ```
 
-### 5.3 前端启动测试
+### 4.3 前端验证
 ```bash
 cd library-frontend
+npm install  # 首次运行需要
 npm run dev
 # 访问: http://localhost:5173
 ```
 
-## 6. 常见问题
+## 5. 首次使用
 
-### 6.1 MySQL连接失败
-- 检查MySQL服务是否启动
-- 确认用户名密码正确
-- 检查防火墙设置
+### 5.1 管理员登录
+1. 启动系统后访问前端页面
+2. 使用管理员账号登录
+3. 验证管理员功能（如添加图书）
 
-### 6.2 Diesel CLI安装失败
+### 5.2 创建测试用户
 ```bash
-# 安装MySQL开发库
-# Ubuntu/Debian:
-sudo apt install libmysqlclient-dev
-
-# macOS:
-brew install mysql
+# 创建普通用户
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"test123","phone":"13800138000"}'
 ```
 
-### 6.3 端口冲突
+## 6. 常见问题
+
+### 6.1 依赖安装
+```bash
+# 后端依赖
+cd library-backend
+cargo build
+
+# 前端依赖
+cd library-frontend
+npm install
+```
+
+### 6.2 端口冲突
 - 后端端口：8080
 - 前端端口：5173
 - 如冲突，修改.env文件中的端口配置
 
-## 7. 下一步行动
-1. ✅ 完成环境配置
-2. 🔄 创建数据库迁移
-3. 🔄 实现第一个用户故事
-4. 🔄 开发基础API
+### 6.3 权限问题
+- 确保MySQL用户有足够权限
+- 检查.env文件配置是否正确
