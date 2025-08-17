@@ -47,5 +47,4 @@ INSERT INTO books (isbn, title, author, category, publisher, total_copies, avail
 ('9787111684107', 'Rust编程之道', '张汉东', '编程', '机械工业出版社', 3, 3);
 
 INSERT INTO users (username, password_hash, role, phone) VALUES
-('admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/J9eHCOOLa', 'admin', '13800138000'),
-('reader1', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/J9eHCOOLa', 'reader', '13800138001');
+('admin', '$argon2id$v=19$m=19456,t=2,p=1$TThr0srQoYuCaEIcgAhLWw$JMi77O7Kf1aZQkZFiCknxpeO+O09vpvHy0zltHiBq3g', 'admin', '13800138000');
