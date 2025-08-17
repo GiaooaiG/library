@@ -307,3 +307,60 @@ pub struct BorrowHistoryResponse {
     pub records: Vec<BorrowResponse>,
     pub total: i64,
 }
+
+// 用于数据库查询的辅助结构体
+#[derive(QueryableByName)]
+pub struct BorrowRecordRow {
+    #[sql_type = "diesel::sql_types::Integer"]
+    pub id: i32,
+    #[sql_type = "diesel::sql_types::Integer"]
+    pub user_id: i32,
+    #[sql_type = "diesel::sql_types::Integer"]
+    pub book_id: i32,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Timestamp>"]
+    pub borrow_date: Option<chrono::NaiveDateTime>,
+    #[sql_type = "diesel::sql_types::Timestamp"]
+    pub due_date: chrono::NaiveDateTime,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Timestamp>"]
+    pub return_date: Option<chrono::NaiveDateTime>,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    pub status: Option<String>,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
+    pub renewal_count: Option<i32>,
+}
+
+#[derive(QueryableByName)]
+pub struct CountRow {
+    #[sql_type = "diesel::sql_types::BigInt"]
+    pub count: i64,
+}
+
+#[derive(QueryableByName)]
+pub struct BorrowHistoryRow {
+    #[sql_type = "diesel::sql_types::Integer"]
+    pub id: i32,
+    #[sql_type = "diesel::sql_types::Integer"]
+    pub book_id: i32,
+    #[sql_type = "diesel::sql_types::Text"]
+    pub book_title: String,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Timestamp>"]
+    pub borrow_date: Option<chrono::NaiveDateTime>,
+    #[sql_type = "diesel::sql_types::Timestamp"]
+    pub due_date: chrono::NaiveDateTime,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    pub status: Option<String>,
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
+    pub renewal_count: Option<i32>,
+}
+
+#[derive(QueryableByName)]
+pub struct AvailableRow {
+    #[sql_type = "diesel::sql_types::Integer"]
+    pub available: i32,
+}
+
+#[derive(QueryableByName)]
+pub struct RenewalCountRow {
+    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
+    pub renewal_count: Option<i32>,
+}
