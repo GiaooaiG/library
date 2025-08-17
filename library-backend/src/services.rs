@@ -3,12 +3,13 @@
 //! This module provides the business logic for managing books and users
 //! in the library system.
 
-pub mod book_service;
-pub mod user_service;
+pub mod book;
+pub mod user;
 pub mod borrow;
-pub mod statistics_service;
+pub mod statistics;
 
 // Re-export the main service structs for easier access
-pub use book_service::BookService;
-pub use user_service::UserService;
+pub use book::BookService;
+pub use user::UserService;
 pub use borrow::BorrowService;
+pub use statistics::StatisticsService;

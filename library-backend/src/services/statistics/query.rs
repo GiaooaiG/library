@@ -1,47 +1,11 @@
 use crate::error::LibraryError;
 use diesel::mysql::MysqlConnection;
 use diesel::prelude::*;
-use serde::{Deserialize, Serialize};
+use super::models::*;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PopularBook {
-    pub book_id: i32,
-    pub title: String,
-    pub author: String,
-    pub category: Option<String>,
-    pub publisher: Option<String>,
-    pub borrow_count: i64,
-    pub total_copies: i32,
-    pub available_copies: i32,
-}
+pub struct StatisticsQuery;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PopularBooksParams {
-    pub start_date: Option<String>,
-    pub end_date: Option<String>,
-    pub limit: Option<i32>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct InventoryStats {
-    pub total_books: i64,
-    pub total_copies: i64,
-    pub available_copies: i64,
-    pub borrowed_copies: i64,
-    pub category_stats: Vec<CategoryStats>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CategoryStats {
-    pub category: Option<String>,
-    pub book_count: i64,
-    pub total_copies: i64,
-    pub available_copies: i64,
-}
-
-pub struct StatisticsService;
-
-impl StatisticsService {
+impl StatisticsQuery {
     /// 获取热门图书排行榜
     pub fn get_popular_books(
         conn: &mut MysqlConnection,
@@ -176,46 +140,4 @@ impl StatisticsService {
             category_stats,
         })
     }
-}
-
-#[derive(QueryableByName)]
-struct PopularBookRow {
-    #[sql_type = "diesel::sql_types::Integer"]
-    book_id: i32,
-    #[sql_type = "diesel::sql_types::Text"]
-    title: String,
-    #[sql_type = "diesel::sql_types::Text"]
-    author: String,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
-    category: Option<String>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
-    publisher: Option<String>,
-    #[sql_type = "diesel::sql_types::BigInt"]
-    borrow_count: i64,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
-    total_copies: Option<i32>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
-    available_copies: Option<i32>,
-}
-
-#[derive(QueryableByName)]
-struct TotalStatsRow {
-    #[sql_type = "diesel::sql_types::BigInt"]
-    total_books: i64,
-    #[sql_type = "diesel::sql_types::BigInt"]
-    total_copies: i64,
-    #[sql_type = "diesel::sql_types::BigInt"]
-    available_copies: i64,
-}
-
-#[derive(QueryableByName)]
-struct CategoryStatsRow {
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
-    category: Option<String>,
-    #[sql_type = "diesel::sql_types::BigInt"]
-    book_count: i64,
-    #[sql_type = "diesel::sql_types::BigInt"]
-    total_copies: i64,
-    #[sql_type = "diesel::sql_types::BigInt"]
-    available_copies: i64,
 }

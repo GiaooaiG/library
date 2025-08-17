@@ -1,9 +1,9 @@
 use actix_web::{web, HttpResponse};
 use validator::Validate;
 use crate::models::{NewBook, BookResponse, ApiResponse, PaginationParams, PaginatedResponse, NewUser, LoginUser, UserResponse, AuthResponse, RegisterUser, BorrowRequest, BorrowResponse};
-use crate::services::statistics_service::{PopularBooksParams, InventoryStats};
+use crate::services::statistics::{PopularBooksParams, InventoryStats};
 use crate::error::LibraryError;
-use crate::services::{BookService, UserService, BorrowService, statistics_service::StatisticsService};
+use crate::services::{BookService, UserService, BorrowService, statistics::StatisticsService};
 use crate::db::DbPool;
 use crate::middleware::{Claims, check_admin_role, check_user_ownership, get_current_user_id, is_admin};
 use jsonwebtoken::{encode, EncodingKey, Header};
