@@ -6,6 +6,8 @@ import BorrowHistory from '../components/BorrowHistory';
 import PopularBooks from '../components/PopularBooks';
 import InventoryStats from '../components/InventoryStats';
 import BookForm from '../components/BookForm';
+import UserManagement from '../components/UserManagement';
+import BorrowRecordsManagement from '../components/BorrowRecordsManagement';
 
 interface User {
   id: number;
@@ -71,10 +73,10 @@ function RoutesConfig({ user, refreshKey, handleBookAdded, onLogin }: RoutesConf
         user?.role === 'admin' ? <BookForm onSuccess={handleBookAdded} /> : <Navigate to="/" replace />
       } />
       <Route path="/admin/users" element={
-        user?.role === 'admin' ? <div>用户管理页面</div> : <Navigate to="/" replace />
+        user?.role === 'admin' ? <UserManagement /> : <Navigate to="/" replace />
       } />
       <Route path="/admin/borrow-records" element={
-        user?.role === 'admin' ? <div>借阅记录管理页面</div> : <Navigate to="/" replace />
+        user?.role === 'admin' ? <BorrowRecordsManagement /> : <Navigate to="/" replace />
       } />
     </Routes>
   );
