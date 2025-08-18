@@ -207,3 +207,12 @@
 - **前端页面**：全部完成
 - **测试覆盖**：集成测试通过
 - **文档更新**：用户故事状态已同步
+
+## 故事24：组件模块化重构
+As a developer, I want to refactor App.tsx into modular components, so that I can improve code maintainability and readability while preserving all existing functionality.
+
+### 验收标准：
+- [ ] 所有路由功能保持完整
+- [ ] 用户认证逻辑不变
+- [ ] 管理员权限检查正常
+- [ ] App.tsx文件行数控制在80行以内
