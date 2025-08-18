@@ -38,21 +38,21 @@ pub struct CategoryStats {
 
 #[derive(diesel::QueryableByName)]
 pub struct PopularBookRow {
-    #[sql_type = "diesel::sql_types::Integer"]
+    #[diesel(sql_type = diesel::sql_types::Integer)]
     pub book_id: i32,
-    #[sql_type = "diesel::sql_types::Text"]
+    #[diesel(sql_type = diesel::sql_types::Text)]
     pub title: String,
-    #[sql_type = "diesel::sql_types::Text"]
+    #[diesel(sql_type = diesel::sql_types::Text)]
     pub author: String,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub category: Option<String>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub publisher: Option<String>,
-    #[sql_type = "diesel::sql_types::BigInt"]
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub borrow_count: i64,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Integer>)]
     pub total_copies: Option<i32>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Integer>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Integer>)]
     pub available_copies: Option<i32>,
 }
 
