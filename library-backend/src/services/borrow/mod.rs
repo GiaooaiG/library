@@ -10,7 +10,6 @@ pub use renew::{renew_book, check_renewal_limit, check_reservation, get_renewal_
 
 use crate::error::LibraryError;
 use crate::models::{BorrowRecord, BorrowResponse};
-use diesel::prelude::*;
 use diesel::mysql::MysqlConnection;
 
 pub struct BorrowService;

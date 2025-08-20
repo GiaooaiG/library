@@ -135,12 +135,6 @@ pub fn check_user_ownership(claims: &Claims, target_user_id: i32) -> Result<(), 
     Ok(())
 }
 
-// 获取当前用户ID
-pub fn get_current_user_id(claims: &Claims) -> Result<i32, Error> {
-    claims.sub.parse::<i32>()
-        .map_err(|_| ErrorUnauthorized("无效的用户ID"))
-}
-
 // 检查是否为管理员
 pub fn is_admin(claims: &Claims) -> bool {
     claims.role.as_ref().map(|s| s.as_str()).unwrap_or("user") == "admin"
