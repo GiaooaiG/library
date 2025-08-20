@@ -19,7 +19,7 @@
 系统已预设管理员账号，可直接使用：
 
 - **用户名**: `admin`
-- **密码**: `password123`
+- **密码**: `123456`
 - **角色**: 管理员
 
 ### 管理员登录
@@ -27,7 +27,7 @@
 # 获取管理员token
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"password123"}'
+  -d '{"username":"admin","password":"123456"}'
 ```
 
 ## 后端权限中间件
@@ -141,7 +141,7 @@ chmod +x test_permission_system.sh
 2. **管理员登录**:
    - 访问 `http://localhost:5173/login`
    - 用户名: `admin`
-   - 密码: `password123`
+   - 密码: `123456`
 
 3. **权限验证**:
    - 管理员可访问所有功能

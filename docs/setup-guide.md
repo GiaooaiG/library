@@ -82,7 +82,7 @@ pause
 系统已预设管理员账号，可直接使用：
 
 - **用户名**: `admin`
-- **密码**: `password123`
+- **密码**: `123456`
 - **角色**: 管理员（拥有所有权限）
 
 ### 3.1 登录方式
@@ -91,7 +91,7 @@ pause
    ```bash
    curl -X POST http://localhost:8080/api/v1/auth/login \
      -H "Content-Type: application/json" \
-     -d '{"username":"admin","password":"password123"}'
+     -d '{"username":"admin","password":"123456"}'
    ```
 
 ### 3.2 管理员权限

@@ -77,7 +77,7 @@ npm run build
 系统已预设管理员账号，部署完成后可直接使用：
 
 - **用户名**: `admin`
-- **密码**: `password123`
+- **密码**: `123456`
 - **权限**: 完整管理员权限
 
 ### 验证管理员功能
@@ -85,7 +85,7 @@ npm run build
 # 管理员登录
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"password123"}'
+  -d '{"username":"admin","password":"123456"}'
 
 # 使用返回的token测试管理员功能
 curl -X GET http://localhost:8080/api/v1/admin/users \
