@@ -40,6 +40,9 @@ pub enum LibraryError {
 
     #[error("未授权访问")]
     Unauthorized,
+
+    #[error("图书当前不可用")]
+    BookNotAvailable,
 }
 
 impl ResponseError for LibraryError {
@@ -124,6 +127,12 @@ impl ResponseError for LibraryError {
                 HttpResponse::Unauthorized().json(serde_json::json!({
                     "success": false,
                     "message": "未授权访问"
+                }))
+            }
+            LibraryError::BookNotAvailable => {
+                HttpResponse::BadRequest().json(serde_json::json!({
+                    "success": false,
+                    "message": "图书当前不可用"
                 }))
             }
         }
