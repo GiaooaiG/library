@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { statisticsService } from '../services/api';
-import type { InventoryStats, CategoryStats } from '../services/api';
+import type { InventoryStats as InventoryStatsType, CategoryStats } from '../services/api';
 import './InventoryStats.css';
 
 const InventoryStats: React.FC = () => {
-  const [stats, setStats] = useState<InventoryStats | null>(null);
+  const [stats, setStats] = useState<InventoryStatsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

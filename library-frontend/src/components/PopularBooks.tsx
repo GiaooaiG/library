@@ -97,9 +97,6 @@ const PopularBooks: React.FC = () => {
         return '';
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('zh-CN');
-    };
 
     if (loading) {
         return (

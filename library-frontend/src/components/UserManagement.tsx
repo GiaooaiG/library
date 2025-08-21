@@ -10,9 +10,8 @@ interface UserManagementProps {
 const UserManagement: React.FC<UserManagementProps> = ({ refreshKey = 0 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage] = useState(1);
 
   useEffect(() => {
     fetchUsers();
@@ -30,8 +29,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ refreshKey = 0 }) => {
       if (response.success && response.data) {
         setUsers(response.data.data);
       }
-    } catch (err) {
-      setError('获取用户列表失败');
+    } catch {
+      setLoading(false);
     } finally {
       setLoading(false);
     }

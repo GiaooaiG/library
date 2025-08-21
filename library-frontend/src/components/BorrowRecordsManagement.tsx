@@ -10,9 +10,8 @@ interface BorrowRecordsManagementProps {
 const BorrowRecordsManagement: React.FC<BorrowRecordsManagementProps> = ({ refreshKey = 0 }) => {
   const [records, setRecords] = useState<BorrowRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   useEffect(() => {
@@ -35,8 +34,8 @@ const BorrowRecordsManagement: React.FC<BorrowRecordsManagementProps> = ({ refre
         }
         setRecords(filtered);
       }
-    } catch (err) {
-      setError('获取借阅记录失败');
+    } catch {
+      setLoading(false);
     } finally {
       setLoading(false);
     }
