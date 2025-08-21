@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Book } from '../services/api';
 import { borrowService, authService } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 import './BookDetail.css';
 
 interface BookDetailProps {
@@ -12,6 +13,7 @@ interface BookDetailProps {
 
 const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false, onBorrowSuccess }) => {
   const [isBorrowing, setIsBorrowing] = useState(false);
+  const navigate = useNavigate();
   
   const getStockStatus = (available: number, total: number) => {
     if (available === 0) {
@@ -80,6 +82,11 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false,
     }
   };
 
+  // 处理编辑图书
+  const handleEditBook = () => {
+    navigate(`/admin/books/edit/${book.id}`);
+  };
+
   return (
     <div className="book-detail-modal" onClick={handleBackdropClick}>
       <div className="book-detail-content">
@@ -144,7 +151,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false,
             </div>
 
             <div className="book-actions">
-              {book.available_copies > 0 ? (
+              {!isAdmin && book.available_copies > 0 && (
                 <button
                   className="btn btn-primary"
                   onClick={handleBorrowBook}
@@ -152,7 +159,8 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false,
                 >
                   {isBorrowing ? '借阅中...' : '借阅图书'}
                 </button>
-              ) : (
+              )}
+              {!isAdmin && book.available_copies === 0 && (
                 <button className="btn btn-secondary" disabled>
                   暂无库存
                 </button>
@@ -160,7 +168,10 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false,
               
               {isAdmin && (
                 <>
-                  <button className="btn btn-warning">
+                  <button
+                    className="btn btn-warning"
+                    onClick={handleEditBook}
+                  >
                     编辑信息
                   </button>
                   <button className="btn btn-danger">

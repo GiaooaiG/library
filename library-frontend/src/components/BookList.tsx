@@ -18,6 +18,10 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   
+  // 获取当前用户信息
+  const currentUser = authService.getCurrentUser();
+  const isAdmin = currentUser?.role === 'admin';
+  
   // 搜索和分页状态
   const [searchInput, setSearchInput] = useState('');
   const [categoryInput, setCategoryInput] = useState('');
@@ -302,7 +306,7 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
                     <span>可用: {book.available_copies}</span>
                   </div>
 
-                  {!showAdminActions && book.available_copies > 0 && (
+                  {!isAdmin && book.available_copies > 0 && (
                     <button
                       type="button"
                       className="btn btn-small btn-primary"
@@ -315,10 +319,21 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
                       借阅
                     </button>
                   )}
-                  {showAdminActions && (
+                  {isAdmin && (
                     <div className="book-actions">
-                      <button className="btn btn-small">编辑</button>
-                      <button className="btn btn-small btn-danger">删除</button>
+                      <button
+                        className="btn btn-small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleBookClick(book);
+                        }}
+                      >
+                        编辑
+                      </button>
+                      <button className="btn btn-small btn-danger">
+                        删除
+                      </button>
                     </div>
                   )}
                 </div>
@@ -334,7 +349,7 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
         <BookDetail
           book={selectedBook}
           onClose={handleCloseDetail}
-          isAdmin={showAdminActions}
+          isAdmin={isAdmin}
           onBorrowSuccess={handleBorrowSuccess}
         />
       )}
