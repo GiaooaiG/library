@@ -17,7 +17,7 @@ async fn main() -> std::io::Result<()> {
     
     println!("🚀 图书馆管理系统后端启动成功！");
     println!("📚 服务器运行在: http://127.0.0.1:8080");
-    println!("🔍 API文档: http://127.0.0.1:8080/api/v1/books");
+    println!("🔍 书籍列表API: http://127.0.0.1:8080/api/v1/books");
     
     HttpServer::new(move || {
         App::new()
