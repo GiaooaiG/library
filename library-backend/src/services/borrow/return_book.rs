@@ -34,7 +34,7 @@ pub fn return_book(
 ) -> Result<BorrowRecord, LibraryError> {
     // 首先检查借阅记录是否存在且属于该用户
     let borrow_record = diesel::sql_query(
-        "SELECT id, user_id, book_id, borrow_date, due_date, return_date, status
+        "SELECT id, user_id, book_id, borrow_date, due_date, return_date, status, renewal_count
          FROM borrow_records
          WHERE id = ? AND user_id = ? AND status = ?"
     )
