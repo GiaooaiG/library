@@ -1,0 +1,35 @@
+关系模式的设计
+1. 实体、属性与联系分析
+系统涉及三大核心实体：
+
+    用户（User）：参与借阅的主体，分为普通用户和管理员。
+    图书（Book）：被借阅的对象，包含馆藏信息。
+    借阅记录（BorrowRecord）：用户与图书之间的多对多联系（一个用户可借多本书，一本书可被多个用户借阅）。
+
+实体属性：
+
+    用户：用户ID、用户名、邮箱、密码、角色。
+    图书：ISBN、书名、作者、出版商、馆藏数量、可借阅数量。
+    借阅记录：用户ID（外键）、图书ISBN（外键）、借阅时间、应还时间、归还时间。
+
+数据字典
+
+| **表名**            | **字段名**           | **数据类型**     | **约束**                       | **说明**           |
+| ----------------- | ----------------- | ------------ | ---------------------------- | ---------------- |
+| **Users**         | UserID            | SERIAL PRIMARY KEY | PRIMARY KEY                  | 用户唯一标识           |
+|                   | Username          | VARCHAR(50)  | NOT NULL                     | 用户昵称             |
+|                   | Email             | VARCHAR(100) | UNIQUE                       | 邮箱唯一             |
+|                   | Password          | VARCHAR(64)  | NOT NULL                     | 加密后的密码           |
+|                   | Role              | ENUM         | DEFAULT '普通用户'               | 角色权限             |
+| **Books**         | ISBN              | VARCHAR(20)  | PRIMARY KEY                  | 图书唯一标识           |
+|                   | Title             | VARCHAR(100) | NOT NULL                     | 书名               |
+|                   | Author            | VARCHAR(50)  | NOT NULL                     | 作者               |
+|                   | Publisher         | VARCHAR(50)  | NOT NULL                     | 出版商              |
+|                   | TotalQuantity     | INT          | CHECK ≥0                     | 总馆藏量             |
+|                   | AvailableQuantity | INT          | CHECK ≤TotalQuantity         | 可借数量             |
+| **BorrowRecords** | RecordID          | INT          | AUTO\_INCREMENT, PRIMARY KEY | 借阅记录编号           |
+|                   | UserID            | VARCHAR(20)  | FOREIGN KEY → Users.UserID   | 借阅用户             |
+|                   | ISBN              | VARCHAR(20)  | FOREIGN KEY → Books.ISBN     | 借阅图书             |
+|                   | BorrowTime        | DATETIME     | NOT NULL                     | 借阅时间             |
+|                   | DueTime           | DATETIME     | NOT NULL                     | 应还时间（默认30天后）     |
+|                   | ReturnTime        | DATETIME     | NULL                         | 实际归还时间（未归还为NULL） |
