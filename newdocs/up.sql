@@ -3,7 +3,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(6) DEFAULT 'user',
+    role VARCHAR(6) DEFAULT 'user' CHECK (role IN ('admin', 'user')),
     phone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -17,10 +17,11 @@ CREATE TABLE books (
     author VARCHAR(255) NOT NULL,
     category VARCHAR(100),
     publisher VARCHAR(255),
-    total_copies INTEGER DEFAULT 1,
-    available_copies INTEGER DEFAULT 1,
+    total_copies INTEGER DEFAULT 1 CHECK (total_copies >= 0),
+    available_copies INTEGER DEFAULT 1 CHECK (available_copies >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_books_available CHECK (available_copies <= total_copies)
 );
 
 -- 创建借阅记录表
@@ -31,8 +32,8 @@ CREATE TABLE borrow_records (
     borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     due_date TIMESTAMP NOT NULL,
     return_date TIMESTAMP,
-    status VARCHAR(8) DEFAULT 'borrowed',
-    renewal_count INTEGER DEFAULT 0,
+    status VARCHAR(8) DEFAULT 'borrowed' CHECK (status IN ('borrowed', 'returned', 'overdue')),
+    renewal_count INTEGER DEFAULT 0 CHECK (renewal_count >= 0),
     CONSTRAINT fk_borrow_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_borrow_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
@@ -45,6 +46,12 @@ CREATE INDEX idx_books_author ON books(author);
 CREATE INDEX idx_borrow_records_user_id ON borrow_records(user_id);
 CREATE INDEX idx_borrow_records_book_id ON borrow_records(book_id);
 CREATE INDEX idx_borrow_records_status ON borrow_records(status);
+
+-- 创建复合索引
+CREATE INDEX idx_books_category_author ON books(category, author);
+CREATE INDEX idx_borrow_records_user_status ON borrow_records(user_id, status);
+CREATE INDEX idx_borrow_records_book_status ON borrow_records(book_id, status);
+CREATE INDEX idx_borrow_records_date_status ON borrow_records(borrow_date, status);
 -- 创建触发器函数，用于更新 updated_at 字段
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
