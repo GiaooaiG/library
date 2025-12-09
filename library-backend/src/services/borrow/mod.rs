@@ -10,14 +10,14 @@ pub use renew::{renew_book, check_renewal_limit, check_reservation, get_renewal_
 
 use crate::error::LibraryError;
 use crate::models::{BorrowRecord, BorrowResponse};
-use diesel::mysql::MysqlConnection;
+use diesel::pg::PgConnection;
 
 pub struct BorrowService;
 
 impl BorrowService {
     /// 创建借阅记录
     pub fn create_borrow_record(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         user_id: i32,
         book_id: i32,
     ) -> Result<BorrowRecord, LibraryError> {
@@ -26,7 +26,7 @@ impl BorrowService {
 
     /// 检查用户是否已经借阅了某本书
     pub fn has_active_borrow(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         user_id: i32,
         book_id: i32,
     ) -> Result<bool, LibraryError> {
@@ -35,7 +35,7 @@ impl BorrowService {
 
     /// 获取用户的借阅历史
     pub fn get_user_borrow_history(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         user_id: i32,
     ) -> Result<Vec<BorrowResponse>, LibraryError> {
         query::get_user_borrow_history(conn, user_id)
@@ -43,7 +43,7 @@ impl BorrowService {
 
     /// 更新图书库存
     pub fn update_book_stock(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         book_id: i32,
         decrement: bool,
     ) -> Result<(), LibraryError> {
@@ -52,7 +52,7 @@ impl BorrowService {
 
     /// 获取图书当前库存
     pub fn get_book_available_copies(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         book_id: i32,
     ) -> Result<i32, LibraryError> {
         query::get_book_available_copies(conn, book_id)
@@ -60,7 +60,7 @@ impl BorrowService {
 
     /// 还书处理
     pub fn return_book(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         borrow_id: i32,
         user_id: i32,
     ) -> Result<BorrowRecord, LibraryError> {
@@ -83,7 +83,7 @@ impl BorrowService {
 
     /// 续借图书
     pub fn renew_book(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         borrow_id: i32,
         user_id: i32,
     ) -> Result<BorrowRecord, LibraryError> {
@@ -92,7 +92,7 @@ impl BorrowService {
 
     /// 检查续借次数限制
     pub fn check_renewal_limit(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         borrow_id: i32,
     ) -> Result<bool, LibraryError> {
         renew::check_renewal_limit(conn, borrow_id)
@@ -100,7 +100,7 @@ impl BorrowService {
 
     /// 检查图书是否被预约
     pub fn check_reservation(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         book_id: i32,
     ) -> Result<bool, LibraryError> {
         renew::check_reservation(conn, book_id)
@@ -108,7 +108,7 @@ impl BorrowService {
 
     /// 获取当前续借次数
     pub fn get_renewal_count(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         borrow_id: i32,
     ) -> Result<i32, LibraryError> {
         renew::get_renewal_count(conn, borrow_id)
@@ -116,7 +116,7 @@ impl BorrowService {
 
     /// 获取所有用户的借阅记录（管理员功能）
     pub fn get_all_borrow_records(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         limit: i64,
         offset: i64,
     ) -> Result<(Vec<BorrowResponse>, i64), LibraryError> {

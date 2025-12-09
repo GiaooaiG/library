@@ -2,15 +2,15 @@
 
 pub mod sql_types {
     #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(mysql_type(name = "Enum"))]
+    #[diesel(postgres_type(name = "borrow_records_status_enum"))]
     pub struct BorrowRecordsStatusEnum;
 
     #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(mysql_type(name = "Enum"))]
+    #[diesel(postgres_type(name = "reservations_status_enum"))]
     pub struct ReservationsStatusEnum;
 
     #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(mysql_type(name = "Enum"))]
+    #[diesel(postgres_type(name = "users_role_enum"))]
     pub struct UsersRoleEnum;
 }
 

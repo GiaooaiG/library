@@ -1,5 +1,5 @@
 use crate::error::LibraryError;
-use diesel::mysql::MysqlConnection;
+use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use super::models::*;
 
@@ -8,7 +8,7 @@ pub struct StatisticsQuery;
 impl StatisticsQuery {
     /// 获取热门图书排行榜
     pub fn get_popular_books(
-        conn: &mut MysqlConnection,
+        conn: &mut PgConnection,
         params: &PopularBooksParams,
     ) -> Result<Vec<PopularBook>, LibraryError> {
         let limit = params.limit.unwrap_or(10).min(100);
@@ -78,7 +78,7 @@ impl StatisticsQuery {
     }
 
     /// 获取库存统计信息
-    pub fn get_inventory_stats(conn: &mut MysqlConnection) -> Result<InventoryStats, LibraryError> {
+    pub fn get_inventory_stats(conn: &mut PgConnection) -> Result<InventoryStats, LibraryError> {
         // 获取总体统计
         let total_query = r#"
             SELECT

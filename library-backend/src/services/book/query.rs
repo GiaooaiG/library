@@ -4,7 +4,7 @@ use crate::schema::books;
 use diesel::prelude::*;
 
 pub fn get_all_books(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     params: &PaginationParams,
 ) -> Result<(Vec<Book>, i64), LibraryError> {
     use crate::schema::books::dsl::*;
@@ -61,7 +61,7 @@ pub fn get_all_books(
     Ok((results, total))
 }
 
-pub fn get_book_by_id(conn: &mut MysqlConnection, book_id: i32) -> Result<Book, LibraryError> {
+pub fn get_book_by_id(conn: &mut PgConnection, book_id: i32) -> Result<Book, LibraryError> {
     let book = books::table
         .find(book_id)
         .first::<Book>(conn)
@@ -71,7 +71,7 @@ pub fn get_book_by_id(conn: &mut MysqlConnection, book_id: i32) -> Result<Book, 
     Ok(book)
 }
 
-pub fn get_book_by_isbn(conn: &mut MysqlConnection, isbn: &str) -> Result<Book, LibraryError> {
+pub fn get_book_by_isbn(conn: &mut PgConnection, isbn: &str) -> Result<Book, LibraryError> {
     let book = books::table
         .filter(books::isbn.eq(isbn))
         .first::<Book>(conn)

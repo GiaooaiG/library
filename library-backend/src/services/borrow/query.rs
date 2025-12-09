@@ -1,12 +1,12 @@
 use crate::error::LibraryError;
 use crate::models::{BorrowResponse, BorrowHistoryRow, CountRow, AvailableRow};
 use diesel::prelude::*;
-use diesel::mysql::MysqlConnection;
+use diesel::pg::PgConnection;
 use chrono::Utc;
 
 /// 获取用户的借阅历史
 pub fn get_user_borrow_history(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     user_id_val: i32,
 ) -> Result<Vec<BorrowResponse>, LibraryError> {
     let results = diesel::sql_query(
@@ -14,7 +14,7 @@ pub fn get_user_borrow_history(
         SELECT br.id, br.book_id, b.title as book_title, br.borrow_date, br.due_date, br.status, br.renewal_count
         FROM borrow_records br
         INNER JOIN books b ON br.book_id = b.id
-        WHERE br.user_id = ?
+        WHERE br.user_id = $1
         ORDER BY br.borrow_date DESC
         "#
     )
@@ -43,11 +43,11 @@ pub fn get_user_borrow_history(
 
 /// 获取图书当前库存
 pub fn get_book_available_copies(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     book_id_val: i32,
 ) -> Result<i32, LibraryError> {
     let available = diesel::sql_query(
-        "SELECT COALESCE(available_copies, 0) as available FROM books WHERE id = ?"
+        "SELECT COALESCE(available_copies, 0) as available FROM books WHERE id = $1"
     )
     .bind::<diesel::sql_types::Integer, _>(book_id_val)
     .get_result::<AvailableRow>(conn)
@@ -61,7 +61,7 @@ pub fn get_book_available_copies(
 
 /// 获取所有用户的借阅记录（管理员功能）
 pub fn get_all_borrow_records(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     limit: i64,
     offset: i64,
 ) -> Result<(Vec<BorrowResponse>, i64), LibraryError> {
@@ -82,7 +82,7 @@ pub fn get_all_borrow_records(
         FROM borrow_records br
         INNER JOIN books b ON br.book_id = b.id
         ORDER BY br.borrow_date DESC
-        LIMIT ? OFFSET ?
+        LIMIT $1 OFFSET $2
         "#
     )
     .bind::<diesel::sql_types::BigInt, _>(limit)

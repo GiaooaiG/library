@@ -3,7 +3,7 @@ use crate::error::LibraryError;
 use crate::schema::books;
 use diesel::prelude::*;
 
-pub fn create_book(conn: &mut MysqlConnection, new_book: NewBook) -> Result<Book, LibraryError> {
+pub fn create_book(conn: &mut PgConnection, new_book: NewBook) -> Result<Book, LibraryError> {
     // 检查ISBN是否已存在
     let existing_book = books::table
         .filter(books::isbn.eq(&new_book.isbn))

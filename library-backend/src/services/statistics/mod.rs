@@ -10,7 +10,7 @@ pub struct StatisticsService;
 impl StatisticsService {
     /// 获取热门图书排行榜
     pub fn get_popular_books(
-        conn: &mut diesel::mysql::MysqlConnection,
+        conn: &mut diesel::pg::PgConnection,
         params: &PopularBooksParams,
     ) -> Result<Vec<PopularBook>, crate::error::LibraryError> {
         StatisticsQuery::get_popular_books(conn, params)
@@ -18,7 +18,7 @@ impl StatisticsService {
 
     /// 获取库存统计信息
     pub fn get_inventory_stats(
-        conn: &mut diesel::mysql::MysqlConnection,
+        conn: &mut diesel::pg::PgConnection,
     ) -> Result<InventoryStats, crate::error::LibraryError> {
         StatisticsQuery::get_inventory_stats(conn)
     }

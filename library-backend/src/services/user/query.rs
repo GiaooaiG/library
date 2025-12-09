@@ -6,7 +6,7 @@ use diesel::prelude::*;
 pub struct UserQuery;
 
 impl UserQuery {
-    pub fn get_user_by_username(conn: &mut diesel::mysql::MysqlConnection, username: &str) -> Result<User, LibraryError> {
+    pub fn get_user_by_username(conn: &mut diesel::pg::PgConnection, username: &str) -> Result<User, LibraryError> {
         let user = users::table
             .filter(users::username.eq(username))
             .first::<User>(conn)
@@ -18,7 +18,7 @@ impl UserQuery {
 
     /// 获取所有用户（管理员功能）
     pub fn get_all_users(
-        conn: &mut diesel::mysql::MysqlConnection,
+        conn: &mut diesel::pg::PgConnection,
         limit: i64,
         offset: i64,
     ) -> Result<(Vec<User>, i64), LibraryError> {

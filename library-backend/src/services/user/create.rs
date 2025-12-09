@@ -6,7 +6,7 @@ use diesel::prelude::*;
 pub struct UserCreate;
 
 impl UserCreate {
-    pub fn create_user(conn: &mut diesel::mysql::MysqlConnection, new_user: NewUser) -> Result<User, LibraryError> {
+    pub fn create_user(conn: &mut diesel::pg::PgConnection, new_user: NewUser) -> Result<User, LibraryError> {
         // 检查用户名是否已存在
         let existing_user = users::table
             .filter(users::username.eq(&new_user.username))

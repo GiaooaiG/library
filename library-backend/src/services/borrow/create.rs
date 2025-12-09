@@ -1,12 +1,12 @@
 use crate::error::LibraryError;
 use crate::models::{BorrowRecord, BorrowRecordRow, BookAvailabilityRow};
-use diesel::mysql::MysqlConnection;
+use diesel::pg::PgConnection;
 use diesel::{Connection, RunQueryDsl};
 use chrono::{Duration, Utc};
 
 /// 使用事务处理机制执行借书操作
 pub fn create_borrow_record(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     user_id_val: i32,
     book_id_val: i32,
 ) -> Result<BorrowRecord, LibraryError> {
@@ -14,7 +14,7 @@ pub fn create_borrow_record(
     conn.transaction(|conn| {
         // 1. 使用 FOR UPDATE 锁定图书记录，防止并发修改库存
         let book_available = diesel::sql_query(
-            "SELECT available_copies FROM books WHERE id = ? FOR UPDATE"
+            "SELECT available_copies FROM books WHERE id = $1 FOR UPDATE"
         )
         .bind::<diesel::sql_types::Integer, _>(book_id_val)
         .get_result::<crate::models::BookAvailabilityRow>(conn)
@@ -32,7 +32,7 @@ pub fn create_borrow_record(
 
         // 2. 插入借阅记录
         diesel::sql_query(
-            "INSERT INTO borrow_records (user_id, book_id, due_date, status) VALUES (?, ?, ?, ?)"
+            "INSERT INTO borrow_records (user_id, book_id, due_date, status) VALUES ($1, $2, $3, $4)"
         )
         .bind::<diesel::sql_types::Integer, _>(user_id_val)
         .bind::<diesel::sql_types::Integer, _>(book_id_val)
@@ -46,7 +46,7 @@ pub fn create_borrow_record(
 
         // 3. 更新图书库存（减少1）
         diesel::sql_query(
-            "UPDATE books SET available_copies = available_copies - 1 WHERE id = ?"
+            "UPDATE books SET available_copies = available_copies - 1 WHERE id = $1"
         )
         .bind::<diesel::sql_types::Integer, _>(book_id_val)
         .execute(conn)
@@ -57,7 +57,7 @@ pub fn create_borrow_record(
 
         // 4. 获取刚插入的借阅记录
         let record = diesel::sql_query(
-            "SELECT id, user_id, book_id, borrow_date, due_date, return_date, status, renewal_count FROM borrow_records WHERE id = LAST_INSERT_ID()"
+            "SELECT id, user_id, book_id, borrow_date, due_date, return_date, status, renewal_count FROM borrow_records WHERE id = (SELECT lastval())"
         )
         .get_result::<BorrowRecordRow>(conn)
         .map_err(|e| {
@@ -80,12 +80,12 @@ pub fn create_borrow_record(
 
 /// 检查用户是否已经借阅了某本书
 pub fn has_active_borrow(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     user_id_val: i32,
     book_id_val: i32,
 ) -> Result<bool, LibraryError> {
     let count = diesel::sql_query(
-        "SELECT COUNT(*) as count FROM borrow_records WHERE user_id = ? AND book_id = ? AND status = ?"
+        "SELECT COUNT(*) as count FROM borrow_records WHERE user_id = $1 AND book_id = $2 AND status = $3"
     )
     .bind::<diesel::sql_types::Integer, _>(user_id_val)
     .bind::<diesel::sql_types::Integer, _>(book_id_val)

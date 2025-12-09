@@ -1,13 +1,13 @@
 use crate::error::LibraryError;
 use crate::models::{BorrowRecord, BorrowRecordRow};
 use diesel::prelude::*;
-use diesel::mysql::MysqlConnection;
+use diesel::pg::PgConnection;
 use diesel::{Connection, RunQueryDsl};
 use chrono::Utc;
 
 /// 使用事务处理机制执行归还图书操作
 pub fn return_book(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     borrow_id_val: i32,
     user_id_val: i32,
 ) -> Result<BorrowRecord, LibraryError> {
@@ -17,7 +17,7 @@ pub fn return_book(
         let borrow_record = diesel::sql_query(
             "SELECT id, user_id, book_id, borrow_date, due_date, return_date, status, renewal_count
              FROM borrow_records
-             WHERE id = ? AND user_id = ? AND status = ?
+             WHERE id = $1 AND user_id = $2 AND status = $3
              FOR UPDATE"
         )
         .bind::<diesel::sql_types::Integer, _>(borrow_id_val)
@@ -31,7 +31,7 @@ pub fn return_book(
 
         // 2. 使用 FOR UPDATE 锁定对应的图书记录，防止并发修改库存
         let _locked_book = diesel::sql_query(
-            "SELECT id FROM books WHERE id = ? FOR UPDATE"
+            "SELECT id FROM books WHERE id = $1 FOR UPDATE"
         )
         .bind::<diesel::sql_types::Integer, _>(borrow_record.book_id)
         .execute(conn)
@@ -45,8 +45,8 @@ pub fn return_book(
         // 3. 更新借阅记录状态为已归还
         let rows_affected = diesel::sql_query(
             "UPDATE borrow_records
-             SET status = ?, return_date = ?
-             WHERE id = ? AND status = ?"
+             SET status = $1, return_date = $2
+             WHERE id = $3 AND status = $4"
         )
         .bind::<diesel::sql_types::Text, _>("returned")
         .bind::<diesel::sql_types::Timestamp, _>(now)
@@ -69,7 +69,7 @@ pub fn return_book(
         let stock_rows_affected = diesel::sql_query(
             "UPDATE books 
              SET available_copies = COALESCE(available_copies, 0) + 1 
-             WHERE id = ?"
+             WHERE id = $1"
         )
         .bind::<diesel::sql_types::Integer, _>(borrow_record.book_id)
         .execute(conn)
@@ -123,7 +123,7 @@ pub fn get_overdue_days(
 
 /// 更新图书库存
 pub fn update_book_stock(
-    conn: &mut MysqlConnection,
+    conn: &mut PgConnection,
     book_id: i32,
     decrement: bool,
 ) -> Result<(), LibraryError> {
@@ -131,8 +131,8 @@ pub fn update_book_stock(
     
     diesel::sql_query(
         "UPDATE books
-         SET available_copies = COALESCE(available_copies, 0) + ?
-         WHERE id = ?"
+         SET available_copies = COALESCE(available_copies, 0) + $1
+         WHERE id = $2"
     )
     .bind::<diesel::sql_types::Integer, _>(change)
     .bind::<diesel::sql_types::Integer, _>(book_id)
