@@ -155,6 +155,36 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
     }
   };
 
+  const handleDeleteBook = async (bookId: number) => {
+    if (!confirm('确定要删除这本图书吗？此操作不可恢复。')) {
+      return;
+    }
+
+    try {
+      const response = await bookService.deleteBook(bookId);
+      
+      if (response.success) {
+        alert('图书删除成功！');
+        // 从本地状态中删除该图书
+        setBooks(prevBooks => prevBooks.filter(book => book.id !== bookId));
+        
+        // 更新分页数据
+        if (pagination) {
+          setPagination(prev => prev ? {
+            ...prev,
+            total: prev.total - 1,
+            data: prev.data.filter(book => book.id !== bookId)
+          } : null);
+        }
+      } else {
+        alert(response.message || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除图书失败:', error);
+      alert('删除图书失败，请稍后重试');
+    }
+  };
+
   const getStockStatus = (available: number, total: number) => {
     if (available === 0) {
       return { text: '已借完', className: 'status-out-of-stock' };
@@ -331,7 +361,14 @@ const BookList: React.FC<BookListProps> = ({ showAdminActions = false }) => {
                       >
                         编辑
                       </button>
-                      <button className="btn btn-small btn-danger">
+                      <button
+                        className="btn btn-small btn-danger"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteBook(book.id);
+                        }}
+                      >
                         删除
                       </button>
                     </div>

@@ -109,6 +109,25 @@ pub async fn update_book(
     Ok(HttpResponse::Ok().json(response))
 }
 
+pub async fn delete_book(
+    pool: web::Data<DbPool>,
+    book_id: web::Path<i32>,
+    claims: Claims,
+) -> Result<HttpResponse, LibraryError> {
+    // 检查管理员权限
+    check_admin_role(&claims).map_err(|_| LibraryError::Unauthorized)?;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    web::block(move || {
+        BookService::delete_book(&mut conn, book_id.into_inner())
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    Ok(HttpResponse::Ok().json(ApiResponse::success("图书删除成功".to_string())))
+}
+
 pub async fn register(
     pool: web::Data<DbPool>,
     user_data: web::Json<RegisterUser>,

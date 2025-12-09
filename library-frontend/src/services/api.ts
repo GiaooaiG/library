@@ -167,6 +167,11 @@ export const bookService = {
     const response = await api.put(`/books/${id}`, book);
     return response.data;
   },
+
+  async deleteBook(id: number): Promise<ApiResponse<void>> {
+    const response = await api.delete(`/books/${id}`);
+    return response.data;
+  },
 };
 
 export const authService = {
