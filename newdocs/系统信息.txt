@@ -1,2 +1,3 @@
 操作系统：Windows 11 x86
-OpenGauss:运行在本地docker上，端口是15432，账户密码是opengaussDB@123456。文件映射关系是C:\Users\Gyh\Documents\opengauss:/var/lib/opengauss
+OpenGauss:运行在本地docker上，
+docker run --name opengauss --privileged=true -d -e GS_PASSWORD=opengaussDB@123456 -v C:\Users\Gyh\Documents\opengauss:/var/lib/opengauss -p 15432:5432 enmotech/opengauss:latest
