@@ -121,7 +121,7 @@ pub fn check_reservation(
          WHERE book_id = $1 AND status = $2"
     )
     .bind::<diesel::sql_types::Integer, _>(book_id_val)
-    .bind::<diesel::sql_types::Text, _>("active")
+    .bind::<diesel::sql_types::Text, _>("pending")
     .get_result::<CountRow>(conn)
     .map_err(|e| {
         eprintln!("检查预约状态失败: {:?}", e);

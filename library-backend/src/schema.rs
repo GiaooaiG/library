@@ -1,19 +1,5 @@
 // @generated automatically by Diesel CLI.
 
-pub mod sql_types {
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "borrow_records_status_enum"))]
-    pub struct BorrowRecordsStatusEnum;
-
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "reservations_status_enum"))]
-    pub struct ReservationsStatusEnum;
-
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "users_role_enum"))]
-    pub struct UsersRoleEnum;
-}
-
 diesel::table! {
     books (id) {
         id -> Integer,
@@ -35,9 +21,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::BorrowRecordsStatusEnum;
-
     borrow_records (id) {
         id -> Integer,
         user_id -> Integer,
@@ -46,29 +29,23 @@ diesel::table! {
         due_date -> Timestamp,
         return_date -> Nullable<Timestamp>,
         #[max_length = 8]
-        status -> Nullable<BorrowRecordsStatusEnum>,
+        status -> Nullable<Varchar>,
         renewal_count -> Nullable<Integer>,
     }
 }
 
 diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::ReservationsStatusEnum;
-
     reservations (id) {
         id -> Integer,
         user_id -> Integer,
         book_id -> Integer,
         reservation_date -> Nullable<Timestamp>,
         #[max_length = 9]
-        status -> Nullable<ReservationsStatusEnum>,
+        status -> Nullable<Varchar>,
     }
 }
 
 diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::UsersRoleEnum;
-
     users (id) {
         id -> Integer,
         #[max_length = 50]
@@ -76,7 +53,7 @@ diesel::table! {
         #[max_length = 255]
         password_hash -> Varchar,
         #[max_length = 6]
-        role -> Nullable<UsersRoleEnum>,
+        role -> Nullable<Varchar>,
         #[max_length = 20]
         phone -> Nullable<Varchar>,
         created_at -> Nullable<Timestamp>,

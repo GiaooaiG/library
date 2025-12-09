@@ -117,10 +117,7 @@ pub async fn register(
 
     let user_id = user.id;
     let username = user.username.clone();
-    let role = user.role.as_ref().map(|r| match r {
-        crate::models::UsersRole::Admin => "admin".to_string(),
-        crate::models::UsersRole::User => "user".to_string(),
-    });
+    let role = user.role.clone();
     
     // 生成JWT令牌
     let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_key".to_string());
@@ -187,10 +184,7 @@ pub async fn login(
 
     let user_id = user.id;
     let username = user.username.clone();
-    let role = user.role.as_ref().map(|r| match r {
-        crate::models::UsersRole::Admin => "admin".to_string(),
-        crate::models::UsersRole::User => "user".to_string(),
-    });
+    let role = user.role.clone();
     
     // 生成JWT令牌
     let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_key".to_string());

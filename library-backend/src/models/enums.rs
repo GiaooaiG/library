@@ -1,13 +1,25 @@
 use serde::{Deserialize, Serialize};
 
-// 引入schema中定义的枚举类型
-use crate::schema::sql_types::UsersRoleEnum;
-
-#[derive(Debug, Serialize, Deserialize, Clone, diesel::deserialize::FromSqlRow, diesel::sql_types::SqlType)]
-#[diesel(sql_type = UsersRoleEnum)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum UsersRole {
     Admin,
     User,
+}
+
+impl UsersRole {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            UsersRole::Admin => "admin",
+            UsersRole::User => "user",
+        }
+    }
+    
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "admin" => UsersRole::Admin,
+            _ => UsersRole::User,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -35,32 +47,27 @@ impl BorrowStatus {
     }
 }
 
-impl<DB> diesel::deserialize::FromSql<UsersRoleEnum, DB> for UsersRole
-where
-    DB: diesel::backend::Backend,
-    *const str: diesel::deserialize::FromSql<diesel::sql_types::Text, DB>,
-{
-    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
-        let s = <*const str as diesel::deserialize::FromSql<diesel::sql_types::Text, DB>>::from_sql(bytes)?;
-        let s = unsafe { &*s };
-        match s {
-            "admin" => Ok(UsersRole::Admin),
-            "user" => Ok(UsersRole::User),
-            _ => Ok(UsersRole::User),
-        }
-    }
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ReservationStatus {
+    Pending,
+    Fulfilled,
+    Cancelled,
 }
 
-impl<DB> diesel::serialize::ToSql<UsersRoleEnum, DB> for UsersRole
-where
-    DB: diesel::backend::Backend,
-    str: diesel::serialize::ToSql<diesel::sql_types::Text, DB>,
-{
-    fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, DB>) -> diesel::serialize::Result {
-        let s = match self {
-            UsersRole::Admin => "admin",
-            UsersRole::User => "user",
-        };
-        s.to_sql(out)
+impl ReservationStatus {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            ReservationStatus::Pending => "pending",
+            ReservationStatus::Fulfilled => "fulfilled",
+            ReservationStatus::Cancelled => "cancelled",
+        }
+    }
+    
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "fulfilled" => ReservationStatus::Fulfilled,
+            "cancelled" => ReservationStatus::Cancelled,
+            _ => ReservationStatus::Pending,
+        }
     }
 }

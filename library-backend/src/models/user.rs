@@ -3,14 +3,13 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::models::enums::UsersRole;
 
 #[derive(Queryable, Serialize, Deserialize, Debug, Clone)]
 pub struct User {
     pub id: i32,
     pub username: String,
     pub password_hash: String,
-    pub role: Option<UsersRole>,
+    pub role: Option<String>,
     pub phone: Option<String>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
@@ -62,10 +61,7 @@ impl From<User> for UserResponse {
         UserResponse {
             id: user.id,
             username: user.username,
-            role: user.role.map(|r| match r {
-                UsersRole::Admin => "admin".to_string(),
-                UsersRole::User => "user".to_string(),
-            }),
+            role: user.role,
             phone: user.phone,
             created_at: user.created_at,
         }
