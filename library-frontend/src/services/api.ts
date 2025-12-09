@@ -162,6 +162,11 @@ export const bookService = {
     const response = await api.get(`/books/${id}`);
     return response.data;
   },
+
+  async updateBook(id: number, book: NewBook): Promise<ApiResponse<Book>> {
+    const response = await api.put(`/books/${id}`, book);
+    return response.data;
+  },
 };
 
 export const authService = {

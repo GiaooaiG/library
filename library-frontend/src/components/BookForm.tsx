@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { bookService } from '../services/api';
-import type { NewBook } from '../services/api';
+import type { NewBook, Book } from '../services/api';
+import { useNavigate, useParams } from 'react-router-dom';
 import './BookForm.css';
 
 const bookSchema = z.object({
@@ -36,12 +37,16 @@ type BookFormData = z.infer<typeof bookSchema>;
 
 interface BookFormProps {
   onSuccess?: () => void;
+  book?: Book;
+  isEdit?: boolean;
 }
 
-const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
+const BookForm: React.FC<BookFormProps> = ({ onSuccess, book, isEdit = false }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
 
   const {
     register,
@@ -49,6 +54,7 @@ const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
     reset,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<BookFormData>({
     resolver: zodResolver(bookSchema),
     defaultValues: {
@@ -56,6 +62,19 @@ const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
       available_copies: 1,
     },
   });
+
+  // 如果是编辑模式，加载图书数据
+  useEffect(() => {
+    if (isEdit && book) {
+      setValue('isbn', book.isbn);
+      setValue('title', book.title);
+      setValue('author', book.author);
+      setValue('category', book.category || '');
+      setValue('publisher', book.publisher || '');
+      setValue('total_copies', book.total_copies);
+      setValue('available_copies', book.available_copies);
+    }
+  }, [isEdit, book, setValue]);
 
   const totalCopies = watch('total_copies', 1);
 
@@ -71,16 +90,29 @@ const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
         publisher: data.publisher || undefined,
       };
 
-      const response = await bookService.createBook(bookData);
+      let response;
+      if (isEdit && (book?.id || id)) {
+        response = await bookService.updateBook(book?.id || parseInt(id!), bookData);
+      } else {
+        response = await bookService.createBook(bookData);
+      }
       
       if (response.success) {
         setSuccess(true);
-        reset();
+        if (!isEdit) {
+          reset();
+        }
         if (onSuccess) {
           onSuccess();
         }
+        // 编辑成功后返回上一页
+        if (isEdit) {
+          setTimeout(() => {
+            navigate(-1);
+          }, 1500);
+        }
       } else {
-        setError(response.message || '添加图书失败');
+        setError(response.message || (isEdit ? '更新图书失败' : '添加图书失败'));
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || '网络错误，请稍后重试');
@@ -91,7 +123,7 @@ const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="book-form-container">
-      <h2>添加新图书</h2>
+      <h2>{isEdit ? '编辑图书' : '添加新图书'}</h2>
       
       {error && (
         <div className="alert alert-error">
@@ -101,7 +133,7 @@ const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
       
       {success && (
         <div className="alert alert-success">
-          <span>图书添加成功！</span>
+          <span>{isEdit ? '图书更新成功！' : '图书添加成功！'}</span>
         </div>
       )}
 
@@ -192,10 +224,15 @@ const BookForm: React.FC<BookFormProps> = ({ onSuccess }) => {
 
         <div className="form-actions">
           <button type="submit" disabled={loading} className="btn btn-primary">
-            {loading ? '添加中...' : '添加图书'}
+            {loading ? (isEdit ? '更新中...' : '添加中...') : (isEdit ? '更新图书' : '添加图书')}
           </button>
-          <button type="button" onClick={() => reset()} className="btn btn-secondary">
-            重置
+          {!isEdit && (
+            <button type="button" onClick={() => reset()} className="btn btn-secondary">
+              重置
+            </button>
+          )}
+          <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">
+            返回
           </button>
         </div>
       </form>

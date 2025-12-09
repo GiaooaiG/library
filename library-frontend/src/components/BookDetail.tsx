@@ -85,6 +85,7 @@ const BookDetail: React.FC<BookDetailProps> = ({ book, onClose, isAdmin = false,
   // 处理编辑图书
   const handleEditBook = () => {
     navigate(`/admin/books/edit/${book.id}`);
+    onClose(); // 关闭详情弹窗
   };
 
   return (

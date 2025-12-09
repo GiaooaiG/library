@@ -1,8 +1,10 @@
 pub mod create;
 pub mod query;
+pub mod update;
 
 pub use create::create_book;
 pub use query::{get_all_books, get_book_by_id, get_book_by_isbn};
+pub use update::update_book;
 
 // 为了保持向后兼容，创建 BookService 结构体
 use crate::models::{NewBook, Book};
@@ -29,5 +31,9 @@ impl BookService {
 
     pub fn get_book_by_isbn(conn: &mut PgConnection, isbn: &str) -> Result<Option<Book>, LibraryError> {
         query::get_book_by_isbn(conn, isbn).map(Some)
+    }
+
+    pub fn update_book(conn: &mut PgConnection, book_id: i32, book_data: NewBook) -> Result<Book, LibraryError> {
+        update::update_book(conn, book_id, book_data)
     }
 }

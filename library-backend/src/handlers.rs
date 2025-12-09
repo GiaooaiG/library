@@ -84,6 +84,31 @@ pub async fn get_book(
     Ok(HttpResponse::Ok().json(response))
 }
 
+pub async fn update_book(
+    pool: web::Data<DbPool>,
+    book_id: web::Path<i32>,
+    book_data: web::Json<NewBook>,
+    claims: Claims,
+) -> Result<HttpResponse, LibraryError> {
+    // 检查管理员权限
+    check_admin_role(&claims).map_err(|_| LibraryError::Unauthorized)?;
+    
+    // 验证输入数据
+    book_data.validate().map_err(LibraryError::ValidationError)?;
+
+    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
+
+    let book = web::block(move || {
+        BookService::update_book(&mut conn, book_id.into_inner(), book_data.into_inner())
+    })
+    .await
+    .map_err(|_| LibraryError::InternalServerError)??;
+
+    let response = ApiResponse::success(BookResponse::from(book));
+    
+    Ok(HttpResponse::Ok().json(response))
+}
+
 pub async fn register(
     pool: web::Data<DbPool>,
     user_data: web::Json<RegisterUser>,
@@ -263,18 +288,10 @@ pub async fn borrow_book(
         .expect("valid timestamp")
         .naive_utc();
 
-    // 创建借阅记录
+    // 创建借阅记录（已包含库存更新）
     let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
     let record = web::block(move || {
         BorrowService::create_borrow_record(&mut conn, user_id, book_id)
-    })
-    .await
-    .map_err(|_| LibraryError::InternalServerError)??;
-
-    // 更新库存
-    let mut conn = pool.get().map_err(|_| LibraryError::InternalServerError)?;
-    web::block(move || {
-        BorrowService::update_book_stock(&mut conn, book_id, true)
     })
     .await
     .map_err(|_| LibraryError::InternalServerError)??;

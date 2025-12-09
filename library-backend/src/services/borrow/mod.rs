@@ -6,7 +6,7 @@ pub mod renew;
 pub use create::{create_borrow_record, has_active_borrow};
 pub use query::{get_user_borrow_history, get_book_available_copies, get_all_borrow_records};
 pub use return_book::{return_book, update_book_stock, calculate_overdue, get_overdue_days};
-pub use renew::{renew_book, check_renewal_limit, check_reservation, get_renewal_count};
+pub use renew::{renew_book, check_renewal_limit, get_renewal_count};
 
 use crate::error::LibraryError;
 use crate::models::{BorrowRecord, BorrowResponse};
@@ -98,13 +98,6 @@ impl BorrowService {
         renew::check_renewal_limit(conn, borrow_id)
     }
 
-    /// 检查图书是否被预约
-    pub fn check_reservation(
-        conn: &mut PgConnection,
-        book_id: i32,
-    ) -> Result<bool, LibraryError> {
-        renew::check_reservation(conn, book_id)
-    }
 
     /// 获取当前续借次数
     pub fn get_renewal_count(

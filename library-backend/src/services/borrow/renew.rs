@@ -45,12 +45,6 @@ pub fn renew_book(
             LibraryError::DatabaseError(e)
         })?;
 
-        // 检查图书是否被预约
-        let has_reservation = check_reservation(conn, borrow_record.book_id)?;
-        if has_reservation {
-            return Err(LibraryError::BookReserved);
-        }
-
         // 计算新的到期日期（延长7天）
         let new_due_date = borrow_record.due_date + Duration::days(7);
 
@@ -109,26 +103,6 @@ pub fn check_renewal_limit(
     })?;
 
     Ok(record.renewal_count.unwrap_or(0) < 1)
-}
-
-/// 检查图书是否被预约
-pub fn check_reservation(
-    conn: &mut PgConnection,
-    book_id_val: i32,
-) -> Result<bool, LibraryError> {
-    let count = diesel::sql_query(
-        "SELECT COUNT(*) as count FROM reservations
-         WHERE book_id = $1 AND status = $2"
-    )
-    .bind::<diesel::sql_types::Integer, _>(book_id_val)
-    .bind::<diesel::sql_types::Text, _>("pending")
-    .get_result::<CountRow>(conn)
-    .map_err(|e| {
-        eprintln!("检查预约状态失败: {:?}", e);
-        LibraryError::DatabaseError(e)
-    })?.count;
-
-    Ok(count > 0)
 }
 
 /// 获取当前续借次数

@@ -35,9 +35,6 @@ pub enum LibraryError {
     #[error("续借次数已达上限")]
     RenewalLimitExceeded,
 
-    #[error("图书已被预约，无法续借")]
-    BookReserved,
-
     #[error("未授权访问")]
     Unauthorized,
 
@@ -115,12 +112,6 @@ impl ResponseError for LibraryError {
                 HttpResponse::BadRequest().json(serde_json::json!({
                     "success": false,
                     "message": "续借次数已达上限"
-                }))
-            }
-            LibraryError::BookReserved => {
-                HttpResponse::BadRequest().json(serde_json::json!({
-                    "success": false,
-                    "message": "图书已被预约，无法续借"
                 }))
             }
             LibraryError::Unauthorized => {

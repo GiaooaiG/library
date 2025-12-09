@@ -29,6 +29,7 @@ async fn main() -> std::io::Result<()> {
                             .route("", web::post().to(handlers::create_book))
                             .route("", web::get().to(handlers::get_books))
                             .route("/{id}", web::get().to(handlers::get_book))
+                            .route("/{id}", web::put().to(handlers::update_book))
                     )
                     .service(
                         web::scope("/auth")

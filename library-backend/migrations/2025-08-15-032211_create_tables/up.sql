@@ -37,17 +37,6 @@ CREATE TABLE borrow_records (
     CONSTRAINT fk_borrow_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
 
--- 创建预约表
-CREATE TABLE reservations (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    book_id INTEGER NOT NULL,
-    reservation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(9) DEFAULT 'pending',
-    CONSTRAINT fk_reservation_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_reservation_book FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
-);
-
 -- 创建索引优化查询
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_books_isbn ON books(isbn);
@@ -56,10 +45,6 @@ CREATE INDEX idx_books_author ON books(author);
 CREATE INDEX idx_borrow_records_user_id ON borrow_records(user_id);
 CREATE INDEX idx_borrow_records_book_id ON borrow_records(book_id);
 CREATE INDEX idx_borrow_records_status ON borrow_records(status);
-CREATE INDEX idx_reservations_user_id ON reservations(user_id);
-CREATE INDEX idx_reservations_book_id ON reservations(book_id);
-CREATE INDEX idx_reservations_status ON reservations(status);
-
 -- 创建触发器函数，用于更新 updated_at 字段
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

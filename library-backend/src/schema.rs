@@ -35,17 +35,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    reservations (id) {
-        id -> Integer,
-        user_id -> Integer,
-        book_id -> Integer,
-        reservation_date -> Nullable<Timestamp>,
-        #[max_length = 9]
-        status -> Nullable<Varchar>,
-    }
-}
-
-diesel::table! {
     users (id) {
         id -> Integer,
         #[max_length = 50]
@@ -63,12 +52,9 @@ diesel::table! {
 
 diesel::joinable!(borrow_records -> books (book_id));
 diesel::joinable!(borrow_records -> users (user_id));
-diesel::joinable!(reservations -> books (book_id));
-diesel::joinable!(reservations -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     books,
     borrow_records,
-    reservations,
     users,
 );

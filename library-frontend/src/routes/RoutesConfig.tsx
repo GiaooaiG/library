@@ -8,6 +8,7 @@ import InventoryStats from '../components/InventoryStats';
 import BookForm from '../components/BookForm';
 import UserManagement from '../components/UserManagement';
 import BorrowRecordsManagement from '../components/BorrowRecordsManagement';
+import BookEdit from '../components/BookEdit';
 
 interface User {
   id: number;
@@ -71,6 +72,9 @@ function RoutesConfig({ user, refreshKey, handleBookAdded, onLogin }: RoutesConf
       } />
       <Route path="/admin/books/add" element={
         user?.role === 'admin' ? <BookForm onSuccess={handleBookAdded} /> : <Navigate to="/" replace />
+      } />
+      <Route path="/admin/books/edit/:id" element={
+        user?.role === 'admin' ? <BookEdit onSuccess={handleBookAdded} /> : <Navigate to="/" replace />
       } />
       <Route path="/admin/users" element={
         user?.role === 'admin' ? <UserManagement /> : <Navigate to="/" replace />
