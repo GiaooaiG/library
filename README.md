@@ -6,4 +6,6 @@
 - 数据访问层技术栈：Diesel ORM + MySQL
 - 数据存储层技术栈：MySQL关系型数据库
 
+数据库后期改为openGauss
+
 AI 辅助开发：Claude Code + BMAD Method
